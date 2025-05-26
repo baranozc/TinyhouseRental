@@ -6,7 +6,7 @@ namespace MyProject.Models
 {
     public class Client : User
     {
-        public UserResponse Login(string email, string password)
+        public override UserResponse Login(string email, string password)
         {
             try
             {
@@ -60,14 +60,36 @@ namespace MyProject.Models
             }
         }
 
-        public override void Login()
+        public override UserResponse Logout()
         {
-            // Implementation will be added
-        }
+            try
+            {
+                // Kullanıcı bilgilerini sıfırla
+                string userName = $"{this.Name} {this.Surname}"; // Mesaj için kullanıcı adını sakla
+                this.UserID = 0;
+                this.Email = null;
+                this.Password = null;
+                this.Name = null;
+                this.Surname = null;
+                this.UserType = UserType.CLIENT;
+                this.UserState = false;
 
-        public override void Logout()
-        {
-            // Implementation will be added
+                return new UserResponse
+                {
+                    Success = true,
+                    Message = $"Logout successful: {userName}",
+                    User = null
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UserResponse
+                {
+                    Success = false,
+                    Message = "An error occurred during logout",
+                    User = this
+                };
+            }
         }
 
         // Diğer metodlar buraya eklenecek...

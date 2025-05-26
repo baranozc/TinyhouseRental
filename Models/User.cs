@@ -18,7 +18,7 @@ namespace MyProject.Models
         public UserType UserType { get; set; }
         public bool UserState { get; set; }
 
-        public abstract void Login();
-        public abstract void Logout();
+        public abstract UserResponse Login(string email, string password);
+        public abstract UserResponse Logout();
     }
 } 
