@@ -89,7 +89,7 @@ _ReSharper*/
 *.nuget.targets
 
 # SQL Server files
-*.mdf
+#*.mdf
 *.ldf
 *.ndf
 
