@@ -4,15 +4,14 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+using MyProject.Forms;
+using MyProject.Config;
+using MyProject.Models;
 
 namespace MyProject
 {
-    // Connection string - veritabanı hazır olduğunda güncellenecek
-    public static class DatabaseConfig
-    {
-        public static string ConnectionString = "Server=localhost;Database=TinyHouseManagement;Trusted_Connection=True;";
-    }
-
     public class BaseResponse
     {
         public bool Success { get; set; }
@@ -39,12 +38,6 @@ namespace MyProject
         public Comment Comment { get; set; }
     }
 
-    public enum UserType
-    {
-        CLIENT,
-        ADMIN
-    }
-
     // Base User class
     public abstract class User
     {
@@ -53,7 +46,7 @@ namespace MyProject
         public string Password { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
-        public UserType UserType { get; set; }
+        public UserTypeId UserTypeId { get; set; }
         public bool UserState { get; set; }
 
         public void Login() {
@@ -71,48 +64,89 @@ namespace MyProject
         {
             try
             {
+                #if DEBUG
+                Console.WriteLine($"Attempting to connect with connection string: {DatabaseConfig.ConnectionString}");
+                #endif
+
                 using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = 1 AND UserType = 0";
+                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = 1 AND UserTypeId = 1";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@Email", email);
                     command.Parameters.AddWithValue("@Password", password);
 
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    if (reader.Read())
+                    try
                     {
-                        this.UserID = Convert.ToInt32(reader["UserID"]);
-                        this.Email = reader["Email"].ToString();
-                        this.Password = reader["Password"].ToString();
-                        this.Name = reader["Name"].ToString();
-                        this.Surname = reader["Surname"].ToString();
-                        this.UserType = UserType.CLIENT;
-                        this.UserState = Convert.ToBoolean(reader["UserState"]);
-
+                        connection.Open();
                         #if DEBUG
-                        Console.WriteLine($"[CLIENT] Login successful: {this.Name} {this.Surname}");
+                        Console.WriteLine("Database connection opened successfully");
                         #endif
 
-                        return new UserResponse 
-                        { 
-                            Success = true,
-                            Message = $"Login successful: {this.Name} {this.Surname}",
-                            User = this
-                        };
+                        SqlDataReader reader = command.ExecuteReader();
+
+                        if (reader.Read())
+                        {
+                            this.UserID = Convert.ToInt32(reader["UserID"]);
+                            this.Email = reader["Email"].ToString();
+                            this.Password = reader["Password"].ToString();
+                            this.Name = reader["Name"].ToString();
+                            this.Surname = reader["Surname"].ToString();
+                            this.UserTypeId = UserTypeId.CLIENT;
+                            this.UserState = Convert.ToBoolean(reader["UserState"]);
+
+                            #if DEBUG
+                            Console.WriteLine($"[CLIENT] Login successful: {this.Name} {this.Surname}");
+                            #endif
+
+                            return new UserResponse 
+                            { 
+                                Success = true,
+                                Message = $"Login successful: {this.Name} {this.Surname}",
+                                User = this
+                            };
+                        }
+                        else
+                        {
+                            #if DEBUG
+                            Console.WriteLine("[CLIENT] Login failed - Invalid credentials");
+                            #endif
+
+                            return new UserResponse 
+                            { 
+                                Success = false,
+                                Message = "Email veya şifre hatalı",
+                                User = null
+                            };
+                        }
                     }
-                    else
+                    catch (SqlException sqlEx)
                     {
                         #if DEBUG
-                        Console.WriteLine("[CLIENT] Login failed");
+                        Console.WriteLine($"SQL Error: {sqlEx.Message}, Error Code: {sqlEx.Number}");
                         #endif
+
+                        string errorMessage = "Veritabanı hatası: ";
+                        switch (sqlEx.Number)
+                        {
+                            case 4060: // Cannot open database
+                                errorMessage += "Veritabanı açılamıyor. Veritabanının mevcut olduğundan emin olun.";
+                                break;
+                            case 208: // Invalid object name
+                                errorMessage += "Users tablosu bulunamadı.";
+                                break;
+                            case 18456: // Login failed
+                                errorMessage += "Veritabanına bağlanılamıyor. Yetkilendirme hatası.";
+                                break;
+                            default:
+                                errorMessage += sqlEx.Message;
+                                break;
+                        }
 
                         return new UserResponse 
                         { 
                             Success = false,
-                            Message = "Login failed",
+                            Message = errorMessage,
                             User = null
                         };
                     }
@@ -121,13 +155,13 @@ namespace MyProject
             catch (Exception ex)
             {
                 #if DEBUG
-                Console.WriteLine($"Login error: {ex.Message}");
+                Console.WriteLine($"Unexpected error: {ex.Message}\nStack trace: {ex.StackTrace}");
                 #endif
 
                 return new UserResponse 
                 { 
                     Success = false,
-                    Message = "An error occurred during login",
+                    Message = $"Beklenmeyen bir hata oluştu: {ex.Message}",
                     User = null
                 };
             }
@@ -543,48 +577,89 @@ namespace MyProject
         {
             try
             {
+                #if DEBUG
+                Console.WriteLine($"[ADMIN] Attempting to connect with connection string: {DatabaseConfig.ConnectionString}");
+                #endif
+
                 using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = 1 AND UserType = 1";
+                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = 1 AND UserTypeId = 0";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@Email", email);
                     command.Parameters.AddWithValue("@Password", password);
 
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    if (reader.Read())
+                    try
                     {
-                        this.UserID = Convert.ToInt32(reader["UserID"]);
-                        this.Email = reader["Email"].ToString();
-                        this.Password = reader["Password"].ToString();
-                        this.Name = reader["Name"].ToString();
-                        this.Surname = reader["Surname"].ToString();
-                        this.UserType = UserType.ADMIN;
-                        this.UserState = Convert.ToBoolean(reader["UserState"]);
-
+                        connection.Open();
                         #if DEBUG
-                        Console.WriteLine($"[ADMIN] Login successful: {this.Name} {this.Surname}");
+                        Console.WriteLine("[ADMIN] Database connection opened successfully");
                         #endif
 
-                        return new UserResponse 
-                        { 
-                            Success = true,
-                            Message = $"Login successful: {this.Name} {this.Surname}",
-                            User = this
-                        };
+                        SqlDataReader reader = command.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            this.UserID = Convert.ToInt32(reader["UserID"]);
+                            this.Email = reader["Email"].ToString();
+                            this.Password = reader["Password"].ToString();
+                            this.Name = reader["Name"].ToString();
+                            this.Surname = reader["Surname"].ToString();
+                            // SQL sorgusunda UserType = 1 yerine UserTypeId = 1 olmalı çünkü veritabanında UserTypeId kolonu var
+                            this.UserTypeId = (UserTypeId)Convert.ToInt32(reader["UserTypeId"]); 
+                            this.UserState = Convert.ToBoolean(reader["UserState"]);
+
+                            #if DEBUG
+                            Console.WriteLine($"[ADMIN] Login successful: {this.Name} {this.Surname}");
+                            #endif
+
+                            return new UserResponse 
+                            { 
+                                Success = true,
+                                Message = $"Login successful: {this.Name} {this.Surname}",
+                                User = this
+                            };
+                        }
+                        else
+                        {
+                            #if DEBUG
+                            Console.WriteLine("[ADMIN] Login failed - Invalid credentials");
+                            #endif
+
+                            return new UserResponse 
+                            { 
+                                Success = false,
+                                Message = "Email veya şifre hatalı",
+                                User = null
+                            };
+                        }
                     }
-                    else
+                    catch (SqlException sqlEx)
                     {
                         #if DEBUG
-                        Console.WriteLine("[ADMIN] Login failed");
+                        Console.WriteLine($"[ADMIN] SQL Error: {sqlEx.Message}, Error Code: {sqlEx.Number}");
                         #endif
+
+                        string errorMessage = "Veritabanı hatası: ";
+                        switch (sqlEx.Number)
+                        {
+                            case 4060: // Cannot open database
+                                errorMessage += "Veritabanı açılamıyor. Veritabanının mevcut olduğundan emin olun.";
+                                break;
+                            case 208: // Invalid object name
+                                errorMessage += "Users tablosu bulunamadı.";
+                                break;
+                            case 18456: // Login failed
+                                errorMessage += "Veritabanına bağlanılamıyor. Yetkilendirme hatası.";
+                                break;
+                            default:
+                                errorMessage += sqlEx.Message;
+                                break;
+                        }
 
                         return new UserResponse 
                         { 
                             Success = false,
-                            Message = "Login failed",
+                            Message = errorMessage,
                             User = null
                         };
                     }
@@ -593,13 +668,13 @@ namespace MyProject
             catch (Exception ex)
             {
                 #if DEBUG
-                Console.WriteLine($"Login error: {ex.Message}");
+                Console.WriteLine($"[ADMIN] Unexpected error: {ex.Message}\nStack trace: {ex.StackTrace}");
                 #endif
 
                 return new UserResponse 
                 { 
                     Success = false,
-                    Message = "An error occurred during login",
+                    Message = $"Beklenmeyen bir hata oluştu: {ex.Message}",
                     User = null
                 };
             }
@@ -1272,6 +1347,17 @@ namespace MyProject
         public int UserID { get; set; }
         public int ListingID { get; set; }
         public int PaymentAmount { get; set; }
+    }
+
+    static class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new LoginForm());
+        }
     }
 }
 

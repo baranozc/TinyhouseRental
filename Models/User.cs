@@ -2,10 +2,10 @@ using System;
 
 namespace MyProject.Models
 {
-    public enum UserType
+    public enum UserTypeId
     {
-        CLIENT,
-        ADMIN
+        ADMIN,
+        CLIENT
     }
 
     public abstract class User
@@ -15,7 +15,7 @@ namespace MyProject.Models
         public string Password { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
-        public UserType UserType { get; set; }
+        public UserTypeId UserTypeId { get; set; }
         public bool UserState { get; set; }
 
         public abstract UserResponse Login(string email, string password);

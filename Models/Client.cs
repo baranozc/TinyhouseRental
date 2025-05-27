@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using MyProject.Config;
 
 namespace MyProject.Models
 {
@@ -12,7 +13,7 @@ namespace MyProject.Models
             {
                 using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = 1 AND UserType = 0";
+                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = True AND UserTypeId = 1";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@Email", email);
@@ -28,7 +29,7 @@ namespace MyProject.Models
                         this.Password = reader["Password"].ToString();
                         this.Name = reader["Name"].ToString();
                         this.Surname = reader["Surname"].ToString();
-                        this.UserType = UserType.CLIENT;
+                        this.UserTypeId = UserTypeId.CLIENT;
                         this.UserState = Convert.ToBoolean(reader["UserState"]);
 
                         return new UserResponse 
@@ -71,7 +72,7 @@ namespace MyProject.Models
                 this.Password = null;
                 this.Name = null;
                 this.Surname = null;
-                this.UserType = UserType.CLIENT;
+                this.UserTypeId = UserTypeId.CLIENT;
                 this.UserState = false;
 
                 return new UserResponse
@@ -86,7 +87,7 @@ namespace MyProject.Models
                 return new UserResponse
                 {
                     Success = false,
-                    Message = "An error occurred during logout",
+                    Message = $"An error occurred during logout: {ex.Message}",
                     User = this
                 };
             }

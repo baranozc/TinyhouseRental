@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
+using MyProject.Config;
 
 namespace MyProject.Models
 {
@@ -11,7 +13,7 @@ namespace MyProject.Models
             {
                 using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = 1 AND UserType = 1";
+                    string query = "SELECT * FROM Users WHERE Email = @Email AND Password = @Password AND UserState = True AND UserTypeId = 0";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@Email", email);
@@ -27,7 +29,7 @@ namespace MyProject.Models
                         this.Password = reader["Password"].ToString();
                         this.Name = reader["Name"].ToString();
                         this.Surname = reader["Surname"].ToString();
-                        this.UserType = UserType.ADMIN;
+                        this.UserTypeId = UserTypeId.ADMIN;
                         this.UserState = Convert.ToBoolean(reader["UserState"]);
 
                         return new UserResponse 
@@ -42,7 +44,7 @@ namespace MyProject.Models
                         return new UserResponse 
                         { 
                             Success = false,
-                            Message = "Login failed",
+                            Message = "Email veya şifre hatalı",
                             User = null
                         };
                     }
@@ -53,7 +55,7 @@ namespace MyProject.Models
                 return new UserResponse 
                 { 
                     Success = false,
-                    Message = "An error occurred during login",
+                    Message = $"Beklenmeyen bir hata oluştu: {ex.Message}",
                     User = null
                 };
             }
@@ -63,14 +65,13 @@ namespace MyProject.Models
         {
             try
             {
-                // Kullanıcı bilgilerini sıfırla
-                string userName = $"{this.Name} {this.Surname}"; // Mesaj için kullanıcı adını sakla
+                string userName = $"{this.Name} {this.Surname}";
                 this.UserID = 0;
                 this.Email = null;
                 this.Password = null;
                 this.Name = null;
                 this.Surname = null;
-                this.UserType = UserType.ADMIN;
+                this.UserTypeId = UserTypeId.ADMIN;
                 this.UserState = false;
 
                 return new UserResponse
@@ -85,7 +86,7 @@ namespace MyProject.Models
                 return new UserResponse
                 {
                     Success = false,
-                    Message = "An error occurred during admin logout",
+                    Message = $"An error occurred during admin logout: {ex.Message}",
                     User = this
                 };
             }
