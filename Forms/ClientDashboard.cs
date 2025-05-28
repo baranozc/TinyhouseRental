@@ -1,5 +1,9 @@
 using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Windows.Forms;
+using MyProject.Config;
+using MyProject.Models;
 
 namespace MyProject.Forms
 {
@@ -108,8 +112,54 @@ namespace MyProject.Forms
 
         private void LoadReservations()
         {
-            // TODO: Implement loading user's reservations from database
-            // This should populate dgvReservations with user's reservations
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    connection.Open();
+                    string query = @"
+                        SELECT 
+                            r.reservationID,
+                            l.listingId as ListingTitle,
+                            r.checkInDate,
+                            r.checkOutDate,
+                            r.paymentId as TotalPrice,
+                            r.reservationState as ReservationStatus,
+                            '' as SpecialRequests
+                        FROM Reservations r
+                        INNER JOIN Listings l ON r.listingId = l.listingId
+                        WHERE r.userId = @UserID
+                        ORDER BY r.checkInDate DESC";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@UserID", _client.UserID);
+                        
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+                        
+                        dgvReservations.DataSource = dataTable;
+                        
+                        // Format the columns
+                        if (dataTable.Rows.Count > 0)
+                        {
+                            dgvReservations.Columns["reservationID"].HeaderText = "Reservation ID";
+                            dgvReservations.Columns["ListingTitle"].HeaderText = "Listing";
+                            dgvReservations.Columns["checkInDate"].HeaderText = "Check-in Date";
+                            dgvReservations.Columns["checkOutDate"].HeaderText = "Check-out Date";
+                            dgvReservations.Columns["TotalPrice"].HeaderText = "Payment ID";
+                            dgvReservations.Columns["ReservationStatus"].HeaderText = "Status";
+                            dgvReservations.Columns["SpecialRequests"].HeaderText = "Special Requests";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading reservations: {ex.Message}\n\nStack Trace: {ex.StackTrace}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnMakeReservation_Click(object sender, EventArgs e)
