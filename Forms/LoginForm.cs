@@ -10,6 +10,7 @@ namespace MyProject.Forms
         private TextBox txtEmail;
         private TextBox txtPassword;
         private Button btnLogin;
+        private Button btnSignUp;
         private Label lblEmail;
         private Label lblPassword;
         private RadioButton rbClient;
@@ -25,6 +26,7 @@ namespace MyProject.Forms
             this.txtEmail = new TextBox();
             this.txtPassword = new TextBox();
             this.btnLogin = new Button();
+            this.btnSignUp = new Button();
             this.lblEmail = new Label();
             this.lblPassword = new Label();
             this.rbClient = new RadioButton();
@@ -36,6 +38,7 @@ namespace MyProject.Forms
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.MinimizeBox = false;
 
             // Email Label
             this.lblEmail.Text = "Email:";
@@ -43,43 +46,54 @@ namespace MyProject.Forms
             this.lblEmail.AutoSize = true;
 
             // Email TextBox
-            this.txtEmail.Location = new System.Drawing.Point(150, 50);
-            this.txtEmail.Size = new System.Drawing.Size(200, 20);
+            this.txtEmail.Location = new System.Drawing.Point(50, 70);
+            this.txtEmail.Size = new System.Drawing.Size(280, 25);
 
             // Password Label
             this.lblPassword.Text = "Password:";
-            this.lblPassword.Location = new System.Drawing.Point(50, 90);
+            this.lblPassword.Location = new System.Drawing.Point(50, 100);
             this.lblPassword.AutoSize = true;
 
             // Password TextBox
-            this.txtPassword.Location = new System.Drawing.Point(150, 90);
-            this.txtPassword.Size = new System.Drawing.Size(200, 20);
-            this.txtPassword.PasswordChar = '*';
+            this.txtPassword.Location = new System.Drawing.Point(50, 120);
+            this.txtPassword.Size = new System.Drawing.Size(280, 25);
+            this.txtPassword.PasswordChar = '•';
 
             // Radio Buttons
             this.rbClient.Text = "Client";
-            this.rbClient.Location = new System.Drawing.Point(150, 130);
+            this.rbClient.Location = new System.Drawing.Point(50, 160);
             this.rbClient.Checked = true;
 
             this.rbAdmin.Text = "Admin";
-            this.rbAdmin.Location = new System.Drawing.Point(250, 130);
+            this.rbAdmin.Location = new System.Drawing.Point(150, 160);
 
             // Login Button
             this.btnLogin.Text = "Login";
-            this.btnLogin.Location = new System.Drawing.Point(150, 170);
-            this.btnLogin.Size = new System.Drawing.Size(100, 30);
+            this.btnLogin.Location = new System.Drawing.Point(50, 200);
+            this.btnLogin.Size = new System.Drawing.Size(130, 35);
+            this.btnLogin.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
+            this.btnLogin.ForeColor = System.Drawing.Color.White;
+            this.btnLogin.FlatStyle = FlatStyle.Flat;
             this.btnLogin.Click += new EventHandler(BtnLogin_Click);
 
+            // Sign Up Button
+            this.btnSignUp.Text = "Sign Up";
+            this.btnSignUp.Location = new System.Drawing.Point(200, 200);
+            this.btnSignUp.Size = new System.Drawing.Size(130, 35);
+            this.btnSignUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(123)))), ((int)(((byte)(255)))));
+            this.btnSignUp.ForeColor = System.Drawing.Color.White;
+            this.btnSignUp.FlatStyle = FlatStyle.Flat;
+            this.btnSignUp.Click += new EventHandler(BtnSignUp_Click);
+
             // Add controls to form
-            this.Controls.AddRange(new Control[] {
-                this.lblEmail,
-                this.txtEmail,
-                this.lblPassword,
-                this.txtPassword,
-                this.rbClient,
-                this.rbAdmin,
-                this.btnLogin
-            });
+            this.Controls.Add(this.lblEmail);
+            this.Controls.Add(this.txtEmail);
+            this.Controls.Add(this.lblPassword);
+            this.Controls.Add(this.txtPassword);
+            this.Controls.Add(this.rbClient);
+            this.Controls.Add(this.rbAdmin);
+            this.Controls.Add(this.btnLogin);
+            this.Controls.Add(this.btnSignUp);
         }
 
         private void BtnLogin_Click(object sender, EventArgs e)
@@ -144,6 +158,14 @@ namespace MyProject.Forms
                 MessageBox.Show($"Beklenmeyen hata: {ex.Message}\n\nHata detayı: {ex.StackTrace}", 
                     "Sistem Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void BtnSignUp_Click(object sender, EventArgs e)
+        {
+            var signUpForm = new SignUpForm();
+            this.Hide();
+            signUpForm.ShowDialog();
+            this.Show();
         }
     }
 } 

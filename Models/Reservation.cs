@@ -7,10 +7,10 @@ namespace MyProject.Models
         public int ReservationID { get; set; }
         public int UserID { get; set; }
         public int ListingID { get; set; }
-        public int PaymentID { get; set; }
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public bool ReservationState { get; set; }
+        public bool PaymentState { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? CancelledDate { get; set; }
         public string CancellationReason { get; set; }
