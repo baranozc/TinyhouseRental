@@ -23,6 +23,25 @@ namespace MyProject.Forms
         private Button btnCancelReservation;
         private Button btnCreateListing;
         private Button btnLogout;
+        private Button btnSwitchAccount;
+        private TextBox txtName;
+        private TextBox txtSurname;
+        private TextBox txtOldPassword;
+        private TextBox txtNewPassword;
+        private TextBox txtNewPasswordRepeat;
+        private TextBox txtAbout;
+        private Button btnSaveProfile;
+        private Label lblProfileInfo;
+        private Label lblName;
+        private Label lblSurname;
+        private Label lblOldPassword;
+        private Label lblNewPassword;
+        private Label lblNewPasswordRepeat;
+        private Label lblAbout;
+        private Panel pnlProfileCard;
+        private PictureBox picProfileIcon;
+        private Label lblProfileTitle;
+        private TableLayoutPanel tblProfileLayout;
 
         public ClientDashboard(Client client)
         {
@@ -48,6 +67,24 @@ namespace MyProject.Forms
             this.btnCancelReservation = new Button();
             this.btnCreateListing = new Button();
             this.btnLogout = new Button();
+            this.btnSwitchAccount = new Button();
+            this.txtName = new TextBox();
+            this.txtSurname = new TextBox();
+            this.txtOldPassword = new TextBox();
+            this.txtNewPassword = new TextBox();
+            this.txtNewPasswordRepeat = new TextBox();
+            this.txtAbout = new TextBox();
+            this.btnSaveProfile = new Button();
+            this.lblProfileInfo = new Label();
+            this.lblName = new Label();
+            this.lblSurname = new Label();
+            this.lblOldPassword = new Label();
+            this.lblNewPassword = new Label();
+            this.lblNewPasswordRepeat = new Label();
+            this.lblAbout = new Label();
+            this.pnlProfileCard = new Panel();
+            this.picProfileIcon = new PictureBox();
+            this.lblProfileTitle = new Label();
 
             // Form
             this.Text = "Tiny House Rental - Client Dashboard";
@@ -67,6 +104,18 @@ namespace MyProject.Forms
             this.btnLogout.Cursor = Cursors.Hand;
             this.btnLogout.Click += new EventHandler(BtnLogout_Click);
             this.btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            // Hesap Değiştir Butonu
+            this.btnSwitchAccount.Text = "Hesap Değiştir";
+            this.btnSwitchAccount.Size = new System.Drawing.Size(120, 35);
+            this.btnSwitchAccount.Location = new System.Drawing.Point(this.Width - btnLogout.Width - btnSwitchAccount.Width - 35, 10);
+            this.btnSwitchAccount.FlatStyle = FlatStyle.Flat;
+            this.btnSwitchAccount.BackColor = System.Drawing.Color.FromArgb(33, 150, 243); // Mavi
+            this.btnSwitchAccount.ForeColor = System.Drawing.Color.White;
+            this.btnSwitchAccount.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.btnSwitchAccount.Cursor = Cursors.Hand;
+            this.btnSwitchAccount.Click += new EventHandler(BtnSwitchAccount_Click);
+            this.btnSwitchAccount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             // Tab Control - Adjust position to make room for logout button
             this.tabControl.Location = new Point(0, 50);
@@ -245,8 +294,123 @@ namespace MyProject.Forms
             this.dgvMyListings.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvMyListings.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
 
+            // Profil Paneli Modern Tasarım
+            this.pnlProfileCard = new Panel();
+            this.pnlProfileCard.Dock = DockStyle.Fill;
+            this.pnlProfileCard.BackColor = System.Drawing.Color.WhiteSmoke;
+
+            // Başlık
+            this.lblProfileTitle = new Label();
+            this.lblProfileTitle.Text = "My Profile";
+            this.lblProfileTitle.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
+            this.lblProfileTitle.ForeColor = System.Drawing.Color.FromArgb(33, 150, 243);
+            this.lblProfileTitle.AutoSize = true;
+            this.lblProfileTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblProfileTitle.Dock = DockStyle.None;
+            this.lblProfileTitle.Location = new Point(30, 30);
+            this.lblProfileTitle.Padding = new Padding(0, 0, 0, 0);
+
+            // TableLayoutPanel
+            this.tblProfileLayout = new TableLayoutPanel();
+            this.tblProfileLayout.Dock = DockStyle.None;
+            this.tblProfileLayout.ColumnCount = 2;
+            this.tblProfileLayout.RowCount = 6;
+            this.tblProfileLayout.Width = 500;
+            this.tblProfileLayout.Height = 260;
+            this.tblProfileLayout.Location = new Point(300, 60); // Başlığın sağ altı
+            this.tblProfileLayout.BackColor = System.Drawing.Color.Transparent;
+            this.tblProfileLayout.ColumnStyles.Clear();
+            this.tblProfileLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
+            this.tblProfileLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65F));
+            this.tblProfileLayout.RowStyles.Clear();
+            for (int i = 0; i < 6; i++)
+                this.tblProfileLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+
+            // Label ve textbox'lar
+            this.lblName.Text = "Name";
+            this.lblSurname.Text = "Surname";
+            this.lblOldPassword.Text = "Old Password";
+            this.lblNewPassword.Text = "New Password";
+            this.lblNewPasswordRepeat.Text = "Repeat New Password";
+            this.lblAbout.Text = "About";
+
+            Label[] labels = { lblName, lblSurname, lblOldPassword, lblNewPassword, lblNewPasswordRepeat, lblAbout };
+            foreach (var lbl in labels)
+            {
+                lbl.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+                lbl.ForeColor = System.Drawing.Color.FromArgb(33, 150, 243);
+                lbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+                lbl.Dock = DockStyle.Fill;
+            }
+
+            TextBox[] textboxes = { txtName, txtSurname, txtOldPassword, txtNewPassword, txtNewPasswordRepeat, txtAbout };
+            foreach (var tb in textboxes)
+            {
+                tb.Font = new System.Drawing.Font("Segoe UI", 11F);
+                tb.BackColor = System.Drawing.Color.White;
+                tb.BorderStyle = BorderStyle.FixedSingle;
+                tb.ForeColor = System.Drawing.Color.Black;
+                tb.Dock = DockStyle.Fill;
+                tb.Margin = new Padding(5, 8, 10, 8);
+            }
+            this.txtAbout.Multiline = true;
+            this.txtAbout.Height = 60;
+
+            // TableLayoutPanel'e ekle
+            this.tblProfileLayout.Controls.Clear();
+            this.tblProfileLayout.Controls.Add(this.lblName, 0, 0);
+            this.tblProfileLayout.Controls.Add(this.txtName, 1, 0);
+            this.tblProfileLayout.Controls.Add(this.lblSurname, 0, 1);
+            this.tblProfileLayout.Controls.Add(this.txtSurname, 1, 1);
+            this.tblProfileLayout.Controls.Add(this.lblOldPassword, 0, 2);
+            this.tblProfileLayout.Controls.Add(this.txtOldPassword, 1, 2);
+            this.tblProfileLayout.Controls.Add(this.lblNewPassword, 0, 3);
+            this.tblProfileLayout.Controls.Add(this.txtNewPassword, 1, 3);
+            this.tblProfileLayout.Controls.Add(this.lblNewPasswordRepeat, 0, 4);
+            this.tblProfileLayout.Controls.Add(this.txtNewPasswordRepeat, 1, 4);
+            this.tblProfileLayout.Controls.Add(this.lblAbout, 0, 5);
+            this.tblProfileLayout.Controls.Add(this.txtAbout, 1, 5);
+
+            // Save Butonu
+            this.btnSaveProfile.Text = "Save";
+            this.btnSaveProfile.Dock = DockStyle.None;
+            this.btnSaveProfile.Size = new System.Drawing.Size(180, 40);
+            this.btnSaveProfile.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnSaveProfile.BackColor = System.Drawing.Color.FromArgb(33, 150, 243);
+            this.btnSaveProfile.ForeColor = System.Drawing.Color.White;
+            this.btnSaveProfile.FlatStyle = FlatStyle.Flat;
+            this.btnSaveProfile.Anchor = AnchorStyles.Top;
+            this.btnSaveProfile.Location = new System.Drawing.Point(
+                this.tblProfileLayout.Location.X + (this.tblProfileLayout.Width - this.btnSaveProfile.Width) / 2,
+                this.tblProfileLayout.Location.Y + this.tblProfileLayout.Height + 10
+            );
+            this.btnSaveProfile.Click += new EventHandler(BtnSaveProfile_Click);
+
+            // Bilgi Label'ı
+            this.lblProfileInfo.Dock = DockStyle.None;
+            this.lblProfileInfo.Size = new System.Drawing.Size(500, 40);
+            this.lblProfileInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Italic);
+            this.lblProfileInfo.ForeColor = System.Drawing.Color.Green;
+            this.lblProfileInfo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblProfileInfo.Location = new System.Drawing.Point(
+                this.tblProfileLayout.Location.X,
+                this.btnSaveProfile.Location.Y + this.btnSaveProfile.Height + 10
+            );
+
+            // Panelin içine ekle
+            this.pnlProfileCard.Controls.Clear();
+            this.pnlProfileCard.Controls.Add(this.lblProfileTitle);
+            this.pnlProfileCard.Controls.Add(this.tblProfileLayout);
+            this.pnlProfileCard.Controls.Add(this.btnSaveProfile);
+            this.pnlProfileCard.Controls.Add(this.lblProfileInfo);
+
+            // Tab'a ekle
+            this.tabProfile.Controls.Clear();
+            this.tabProfile.Controls.Add(this.pnlProfileCard);
+
             // Add controls to form
             this.Controls.Add(this.tabControl);
+            this.Controls.Add(this.btnSwitchAccount);
             this.Controls.Add(this.btnLogout);
         }
 
@@ -529,13 +693,100 @@ namespace MyProject.Forms
             }
         }
 
+        private void BtnSwitchAccount_Click(object sender, EventArgs e)
+        {
+            // Login formunu göster, bu formu gizle
+            this.Hide();
+            var loginForm = new LoginForm();
+            var result = loginForm.ShowDialog();
+            if (result == DialogResult.OK || result == DialogResult.Cancel)
+            {
+                this.Close();
+            }
+            else
+            {
+                this.Show();
+            }
+        }
+
         private void BtnLogout_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Çıkış yapmak istediğinize emin misiniz?", "Çıkış Yap",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                this.Close();
-                new LoginForm().Show();
+                Application.Exit();
+            }
+        }
+
+        private void BtnSaveProfile_Click(object sender, EventArgs e)
+        {
+            string name = txtName.Text.Trim();
+            string surname = txtSurname.Text.Trim();
+            string oldPassword = txtOldPassword.Text;
+            string newPassword = txtNewPassword.Text;
+            string newPasswordRepeat = txtNewPasswordRepeat.Text;
+            string about = txtAbout.Text.Trim();
+
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(surname))
+            {
+                MessageBox.Show("Ad ve soyad boş olamaz.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Şifre değiştirme isteği var mı?
+            bool changePassword = !string.IsNullOrEmpty(oldPassword) || !string.IsNullOrEmpty(newPassword) || !string.IsNullOrEmpty(newPasswordRepeat);
+            if (changePassword)
+            {
+                if (string.IsNullOrEmpty(oldPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(newPasswordRepeat))
+                {
+                    MessageBox.Show("Şifre değiştirmek için tüm şifre alanlarını doldurun.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                if (newPassword != newPasswordRepeat)
+                {
+                    MessageBox.Show("Yeni şifreler eşleşmiyor.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                // Eski şifre doğru mu kontrol et
+                if (oldPassword != _client.Password)
+                {
+                    MessageBox.Show("Mevcut şifre yanlış.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
+
+            // Veritabanında güncelle
+            try
+            {
+                using (var connection = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    connection.Open();
+                    string query = "UPDATE Users SET Name = @Name, Surname = @Surname, About = @About";
+                    if (changePassword)
+                        query += ", Password = @Password";
+                    query += " WHERE UserID = @UserID";
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Name", name);
+                        command.Parameters.AddWithValue("@Surname", surname);
+                        command.Parameters.AddWithValue("@About", about);
+                        if (changePassword)
+                            command.Parameters.AddWithValue("@Password", newPassword);
+                        command.Parameters.AddWithValue("@UserID", _client.UserID);
+                        command.ExecuteNonQuery();
+                    }
+                }
+                // Local client objesini güncelle
+                _client.Name = name;
+                _client.Surname = surname;
+                _client.About = about;
+                if (changePassword)
+                    _client.Password = newPassword;
+                lblProfileInfo.Text = $"Profil güncellendi!\nAd: {name} {surname}\nHakkımda: {about}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Profil güncellenirken hata oluştu: {ex.Message}", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
