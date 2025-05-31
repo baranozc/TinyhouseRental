@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Windows.Forms;
 using MyProject.Config;
 using MyProject.Models;
+using System.Drawing;
 
 namespace MyProject.Forms
 {
@@ -19,7 +20,6 @@ namespace MyProject.Forms
         private DataGridView dgvReservations;
         private DataGridView dgvMyListings;
         private Button btnMakeReservation;
-        private Button btnViewDetails;
         private Button btnCancelReservation;
         private Button btnCreateListing;
         private Button btnLogout;
@@ -63,7 +63,6 @@ namespace MyProject.Forms
             this.dgvReservations = new DataGridView();
             this.dgvMyListings = new DataGridView();
             this.btnMakeReservation = new Button();
-            this.btnViewDetails = new Button();
             this.btnCancelReservation = new Button();
             this.btnCreateListing = new Button();
             this.btnLogout = new Button();
@@ -98,8 +97,8 @@ namespace MyProject.Forms
             this.btnLogout.Size = new System.Drawing.Size(100, 35);
             this.btnLogout.Location = new System.Drawing.Point(this.Width - btnLogout.Width - 25, 10);
             this.btnLogout.FlatStyle = FlatStyle.Flat;
-            this.btnLogout.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            this.btnLogout.ForeColor = System.Drawing.Color.White;
+            this.btnLogout.BackColor = Color.FromArgb(239, 68, 68); // Kırmızı
+            this.btnLogout.ForeColor = Color.White;
             this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnLogout.Cursor = Cursors.Hand;
             this.btnLogout.Click += new EventHandler(BtnLogout_Click);
@@ -110,16 +109,16 @@ namespace MyProject.Forms
             this.btnSwitchAccount.Size = new System.Drawing.Size(120, 35);
             this.btnSwitchAccount.Location = new System.Drawing.Point(this.Width - btnLogout.Width - btnSwitchAccount.Width - 35, 10);
             this.btnSwitchAccount.FlatStyle = FlatStyle.Flat;
-            this.btnSwitchAccount.BackColor = System.Drawing.Color.FromArgb(33, 150, 243); // Mavi
-            this.btnSwitchAccount.ForeColor = System.Drawing.Color.White;
+            this.btnSwitchAccount.BackColor = Color.FromArgb(245, 158, 66); // Turuncu
+            this.btnSwitchAccount.ForeColor = Color.White;
             this.btnSwitchAccount.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnSwitchAccount.Cursor = Cursors.Hand;
             this.btnSwitchAccount.Click += new EventHandler(BtnSwitchAccount_Click);
             this.btnSwitchAccount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             // Tab Control - Adjust position to make room for logout button
-            this.tabControl.Location = new Point(0, 50);
-            this.tabControl.Size = new System.Drawing.Size(this.Width, this.Height - 50);
+            this.tabControl.Location = new Point(0, 60);
+            this.tabControl.Size = new System.Drawing.Size(this.Width, this.Height - 60);
             this.tabControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             this.tabControl.Padding = new Point(10, 5);
             this.tabControl.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
@@ -136,7 +135,6 @@ namespace MyProject.Forms
             this.tabListings.Padding = new Padding(15);
             this.tabListings.Controls.Add(this.dgvListings);
             this.tabListings.Controls.Add(this.btnMakeReservation);
-            this.tabListings.Controls.Add(this.btnViewDetails);
 
             this.tabReservations.Text = "My Reservations";
             this.tabReservations.BackColor = System.Drawing.Color.White;
@@ -167,11 +165,14 @@ namespace MyProject.Forms
             this.dgvListings.EnableHeadersVisualStyles = false;
             this.dgvListings.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.dgvListings.RowHeadersVisible = false;
+            this.dgvListings.AllowUserToAddRows = false;
+            this.dgvListings.AdvancedColumnHeadersBorderStyle.Left = DataGridViewAdvancedCellBorderStyle.None;
             this.dgvListings.RowTemplate.Height = 35;
             this.dgvListings.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.dgvListings.ReadOnly = true;
             this.dgvListings.AllowUserToResizeColumns = false;
             this.dgvListings.AllowUserToResizeRows = false;
+            this.dgvListings.ColumnHeadersVisible = true;
 
             // Column Headers Style
             this.dgvListings.ColumnHeadersHeight = 40;
@@ -180,33 +181,33 @@ namespace MyProject.Forms
             this.dgvListings.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.dgvListings.ColumnHeadersDefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
 
-            // Rows Style
-            this.dgvListings.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
-            this.dgvListings.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(240)))), ((int)(((byte)(255)))));
-            this.dgvListings.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
-            this.dgvListings.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
-
             // Make Reservation Button
             this.btnMakeReservation.Text = "Make Reservation";
             this.btnMakeReservation.Location = new System.Drawing.Point(10, 420);
             this.btnMakeReservation.Size = new System.Drawing.Size(150, 40);
             this.btnMakeReservation.FlatStyle = FlatStyle.Flat;
-            this.btnMakeReservation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.btnMakeReservation.ForeColor = System.Drawing.Color.White;
+            this.btnMakeReservation.BackColor = Color.FromArgb(30, 41, 59); // Lacivert
+            this.btnMakeReservation.ForeColor = Color.White;
+            this.btnMakeReservation.FlatAppearance.BorderColor = Color.FromArgb(245, 158, 66); // Turuncu
+            this.btnMakeReservation.FlatAppearance.BorderSize = 2;
             this.btnMakeReservation.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnMakeReservation.Cursor = Cursors.Hand;
             this.btnMakeReservation.Click += new EventHandler(BtnMakeReservation_Click);
 
-            // View Details Button
-            this.btnViewDetails.Text = "View Details";
-            this.btnViewDetails.Location = new System.Drawing.Point(170, 420);
-            this.btnViewDetails.Size = new System.Drawing.Size(150, 40);
-            this.btnViewDetails.FlatStyle = FlatStyle.Flat;
-            this.btnViewDetails.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(162)))), ((int)(((byte)(184)))));
-            this.btnViewDetails.ForeColor = System.Drawing.Color.White;
-            this.btnViewDetails.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnViewDetails.Cursor = Cursors.Hand;
-            this.btnViewDetails.Click += new EventHandler(BtnViewDetails_Click);
+            // Show Comments Button
+            Button btnShowComments = new Button();
+            btnShowComments.Text = "Show Comments";
+            btnShowComments.Location = new System.Drawing.Point(170, 420);
+            btnShowComments.Size = new System.Drawing.Size(150, 40);
+            btnShowComments.FlatStyle = FlatStyle.Flat;
+            btnShowComments.BackColor = Color.FromArgb(51, 65, 85); // Koyu gri
+            btnShowComments.ForeColor = Color.White;
+            btnShowComments.FlatAppearance.BorderColor = Color.FromArgb(245, 158, 66); // Turuncu
+            btnShowComments.FlatAppearance.BorderSize = 2;
+            btnShowComments.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            btnShowComments.Cursor = Cursors.Hand;
+            btnShowComments.Click += new EventHandler(BtnShowComments_Click);
+            this.tabListings.Controls.Add(btnShowComments);
 
             // Reservations DataGridView
             this.dgvReservations.Dock = DockStyle.Top;
@@ -245,8 +246,10 @@ namespace MyProject.Forms
             this.btnCancelReservation.Location = new System.Drawing.Point(10, 420);
             this.btnCancelReservation.Size = new System.Drawing.Size(150, 40);
             this.btnCancelReservation.FlatStyle = FlatStyle.Flat;
-            this.btnCancelReservation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            this.btnCancelReservation.ForeColor = System.Drawing.Color.White;
+            this.btnCancelReservation.BackColor = Color.FromArgb(239, 68, 68); // Kırmızı
+            this.btnCancelReservation.ForeColor = Color.White;
+            this.btnCancelReservation.FlatAppearance.BorderColor = Color.FromArgb(239, 68, 68);
+            this.btnCancelReservation.FlatAppearance.BorderSize = 2;
             this.btnCancelReservation.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnCancelReservation.Cursor = Cursors.Hand;
             this.btnCancelReservation.Click += new EventHandler(BtnCancelReservation_Click);
@@ -256,8 +259,10 @@ namespace MyProject.Forms
             this.btnCreateListing.Location = new System.Drawing.Point(10, 420);
             this.btnCreateListing.Size = new System.Drawing.Size(150, 40);
             this.btnCreateListing.FlatStyle = FlatStyle.Flat;
-            this.btnCreateListing.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.btnCreateListing.ForeColor = System.Drawing.Color.White;
+            this.btnCreateListing.BackColor = Color.FromArgb(30, 41, 59); // Lacivert
+            this.btnCreateListing.ForeColor = Color.White;
+            this.btnCreateListing.FlatAppearance.BorderColor = Color.FromArgb(245, 158, 66); // Turuncu
+            this.btnCreateListing.FlatAppearance.BorderSize = 2;
             this.btnCreateListing.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btnCreateListing.Cursor = Cursors.Hand;
             this.btnCreateListing.Click += new EventHandler(BtnCreateListing_Click);
@@ -332,9 +337,8 @@ namespace MyProject.Forms
             this.lblOldPassword.Text = "Old Password";
             this.lblNewPassword.Text = "New Password";
             this.lblNewPasswordRepeat.Text = "Repeat New Password";
-            this.lblAbout.Text = "About";
 
-            Label[] labels = { lblName, lblSurname, lblOldPassword, lblNewPassword, lblNewPasswordRepeat, lblAbout };
+            Label[] labels = { lblName, lblSurname, lblOldPassword, lblNewPassword, lblNewPasswordRepeat };
             foreach (var lbl in labels)
             {
                 lbl.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
@@ -343,7 +347,7 @@ namespace MyProject.Forms
                 lbl.Dock = DockStyle.Fill;
             }
 
-            TextBox[] textboxes = { txtName, txtSurname, txtOldPassword, txtNewPassword, txtNewPasswordRepeat, txtAbout };
+            TextBox[] textboxes = { txtName, txtSurname, txtOldPassword, txtNewPassword, txtNewPasswordRepeat };
             foreach (var tb in textboxes)
             {
                 tb.Font = new System.Drawing.Font("Segoe UI", 11F);
@@ -353,8 +357,10 @@ namespace MyProject.Forms
                 tb.Dock = DockStyle.Fill;
                 tb.Margin = new Padding(5, 8, 10, 8);
             }
-            this.txtAbout.Multiline = true;
-            this.txtAbout.Height = 60;
+            // Şifre alanlarını gizli yap
+            this.txtOldPassword.PasswordChar = '•';
+            this.txtNewPassword.PasswordChar = '•';
+            this.txtNewPasswordRepeat.PasswordChar = '•';
 
             // TableLayoutPanel'e ekle
             this.tblProfileLayout.Controls.Clear();
@@ -368,21 +374,69 @@ namespace MyProject.Forms
             this.tblProfileLayout.Controls.Add(this.txtNewPassword, 1, 3);
             this.tblProfileLayout.Controls.Add(this.lblNewPasswordRepeat, 0, 4);
             this.tblProfileLayout.Controls.Add(this.txtNewPasswordRepeat, 1, 4);
-            this.tblProfileLayout.Controls.Add(this.lblAbout, 0, 5);
-            this.tblProfileLayout.Controls.Add(this.txtAbout, 1, 5);
+
+            // Şifre göster/gizle butonları
+            Button btnShowOldPassword = new Button();
+            btnShowOldPassword.Size = new System.Drawing.Size(30, 30);
+            btnShowOldPassword.Text = "👁";
+            btnShowOldPassword.Dock = DockStyle.Right;
+            btnShowOldPassword.FlatStyle = FlatStyle.Flat;
+            btnShowOldPassword.BackColor = Color.Transparent;
+            btnShowOldPassword.Click += (s, e) => {
+                txtOldPassword.PasswordChar = txtOldPassword.PasswordChar == '\u25CF' || txtOldPassword.PasswordChar == '•' ? '\0' : '•';
+            };
+            Panel pnlOldPassword = new Panel { Dock = DockStyle.Fill };
+            pnlOldPassword.Controls.Add(txtOldPassword);
+            pnlOldPassword.Controls.Add(btnShowOldPassword);
+
+            Button btnShowNewPassword = new Button();
+            btnShowNewPassword.Size = new System.Drawing.Size(30, 30);
+            btnShowNewPassword.Text = "👁";
+            btnShowNewPassword.Dock = DockStyle.Right;
+            btnShowNewPassword.FlatStyle = FlatStyle.Flat;
+            btnShowNewPassword.BackColor = Color.Transparent;
+            btnShowNewPassword.Click += (s, e) => {
+                txtNewPassword.PasswordChar = txtNewPassword.PasswordChar == '\u25CF' || txtNewPassword.PasswordChar == '•' ? '\0' : '•';
+            };
+            Panel pnlNewPassword = new Panel { Dock = DockStyle.Fill };
+            pnlNewPassword.Controls.Add(txtNewPassword);
+            pnlNewPassword.Controls.Add(btnShowNewPassword);
+
+            Button btnShowRepeatPassword = new Button();
+            btnShowRepeatPassword.Size = new System.Drawing.Size(30, 30);
+            btnShowRepeatPassword.Text = "👁";
+            btnShowRepeatPassword.Dock = DockStyle.Right;
+            btnShowRepeatPassword.FlatStyle = FlatStyle.Flat;
+            btnShowRepeatPassword.BackColor = Color.Transparent;
+            btnShowRepeatPassword.Click += (s, e) => {
+                txtNewPasswordRepeat.PasswordChar = txtNewPasswordRepeat.PasswordChar == '\u25CF' || txtNewPasswordRepeat.PasswordChar == '•' ? '\0' : '•';
+            };
+            Panel pnlRepeatPassword = new Panel { Dock = DockStyle.Fill };
+            pnlRepeatPassword.Controls.Add(txtNewPasswordRepeat);
+            pnlRepeatPassword.Controls.Add(btnShowRepeatPassword);
+
+            // TableLayoutPanel'e şifre panellerini ekle
+            this.tblProfileLayout.Controls.Remove(this.txtOldPassword);
+            this.tblProfileLayout.Controls.Remove(this.txtNewPassword);
+            this.tblProfileLayout.Controls.Remove(this.txtNewPasswordRepeat);
+            this.tblProfileLayout.Controls.Add(pnlOldPassword, 1, 2);
+            this.tblProfileLayout.Controls.Add(pnlNewPassword, 1, 3);
+            this.tblProfileLayout.Controls.Add(pnlRepeatPassword, 1, 4);
 
             // Save Butonu
             this.btnSaveProfile.Text = "Save";
             this.btnSaveProfile.Dock = DockStyle.None;
             this.btnSaveProfile.Size = new System.Drawing.Size(180, 40);
             this.btnSaveProfile.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.btnSaveProfile.BackColor = System.Drawing.Color.FromArgb(33, 150, 243);
-            this.btnSaveProfile.ForeColor = System.Drawing.Color.White;
+            this.btnSaveProfile.BackColor = Color.FromArgb(30, 41, 59); // Lacivert
+            this.btnSaveProfile.ForeColor = Color.White;
             this.btnSaveProfile.FlatStyle = FlatStyle.Flat;
+            this.btnSaveProfile.FlatAppearance.BorderColor = Color.FromArgb(245, 158, 66); // Turuncu
+            this.btnSaveProfile.FlatAppearance.BorderSize = 2;
             this.btnSaveProfile.Anchor = AnchorStyles.Top;
             this.btnSaveProfile.Location = new System.Drawing.Point(
-                this.tblProfileLayout.Location.X + (this.tblProfileLayout.Width - this.btnSaveProfile.Width) / 2,
-                this.tblProfileLayout.Location.Y + this.tblProfileLayout.Height + 10
+                (this.pnlProfileCard.Width - this.btnSaveProfile.Width) / 2,
+                this.tblProfileLayout.Location.Y + this.tblProfileLayout.Height + 20
             );
             this.btnSaveProfile.Click += new EventHandler(BtnSaveProfile_Click);
 
@@ -412,6 +466,10 @@ namespace MyProject.Forms
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnSwitchAccount);
             this.Controls.Add(this.btnLogout);
+
+            // Listings DataGridView selection style
+            this.dgvListings.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(245, 158, 66); // Turuncu
+            this.dgvListings.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
         }
 
         private void LoadListings()
@@ -617,17 +675,18 @@ namespace MyProject.Forms
             }
         }
 
-        private void BtnViewDetails_Click(object sender, EventArgs e)
+        private void BtnShowComments_Click(object sender, EventArgs e)
         {
             if (dgvListings.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a listing first.", "View Details",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a listing first.", "Show Comments", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
-            // TODO: Implement listing details view
-            // Show a dialog with detailed information about the selected listing
+            var selectedRow = dgvListings.SelectedRows[0];
+            int listingId = Convert.ToInt32(selectedRow.Cells["listingID"].Value);
+            string listingTitle = selectedRow.Cells["listingTitle"].Value.ToString();
+            var commentsForm = new CommentsForm(listingId, listingTitle);
+            commentsForm.ShowDialog();
         }
 
         private void BtnCancelReservation_Click(object sender, EventArgs e)
@@ -761,7 +820,7 @@ namespace MyProject.Forms
                 using (var connection = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     connection.Open();
-                    string query = "UPDATE Users SET Name = @Name, Surname = @Surname, About = @About";
+                    string query = "UPDATE Users SET Name = @Name, Surname = @Surname";
                     if (changePassword)
                         query += ", Password = @Password";
                     query += " WHERE UserID = @UserID";
@@ -769,7 +828,6 @@ namespace MyProject.Forms
                     {
                         command.Parameters.AddWithValue("@Name", name);
                         command.Parameters.AddWithValue("@Surname", surname);
-                        command.Parameters.AddWithValue("@About", about);
                         if (changePassword)
                             command.Parameters.AddWithValue("@Password", newPassword);
                         command.Parameters.AddWithValue("@UserID", _client.UserID);
@@ -779,10 +837,9 @@ namespace MyProject.Forms
                 // Local client objesini güncelle
                 _client.Name = name;
                 _client.Surname = surname;
-                _client.About = about;
                 if (changePassword)
                     _client.Password = newPassword;
-                lblProfileInfo.Text = $"Profil güncellendi!\nAd: {name} {surname}\nHakkımda: {about}";
+                lblProfileInfo.Text = $"Profil güncellendi!\nAd: {name} {surname}";
             }
             catch (Exception ex)
             {

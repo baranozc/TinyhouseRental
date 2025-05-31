@@ -26,8 +26,8 @@ namespace MyProject.Forms
             InitializeComponent();
             // Başlangıçta slider sola ve renkler doğru olsun
             pnlSlider.Left = 2;
-            lblClient.ForeColor = Color.FromArgb(76, 175, 80);
-            lblAdmin.ForeColor = Color.FromArgb(100, 100, 100);
+            lblClient.ForeColor = Color.FromArgb(245, 158, 66); // Turuncu (aktif)
+            lblAdmin.ForeColor = Color.FromArgb(51, 65, 85); // Koyu gri (pasif)
         }
 
         private void InitializeComponent()
@@ -67,27 +67,51 @@ namespace MyProject.Forms
             this.lblPassword.Location = new System.Drawing.Point(centerX, 160);
             this.lblPassword.AutoSize = true;
 
-            // Password TextBox
-            this.txtPassword.Location = new System.Drawing.Point(centerX, 180);
-            this.txtPassword.Size = new System.Drawing.Size(280, 25);
+            // Password TextBox ve göz butonu paneli
+            Panel pnlPassword = new Panel();
+            pnlPassword.Location = new System.Drawing.Point(centerX, 180);
+            pnlPassword.Size = new System.Drawing.Size(280, 25);
+            pnlPassword.BackColor = Color.Transparent;
+            pnlPassword.BorderStyle = BorderStyle.None;
+
+            this.txtPassword.Location = new System.Drawing.Point(0, 0);
+            this.txtPassword.Size = new System.Drawing.Size(250, 25);
             this.txtPassword.PasswordChar = '•';
+
+            Button btnShowPassword = new Button();
+            btnShowPassword.Size = new System.Drawing.Size(30, 25);
+            btnShowPassword.Text = "👁";
+            btnShowPassword.Location = new System.Drawing.Point(250, 0);
+            btnShowPassword.FlatStyle = FlatStyle.Flat;
+            btnShowPassword.BackColor = Color.Transparent;
+            btnShowPassword.TabStop = false;
+            btnShowPassword.Click += (s, e) => {
+                txtPassword.PasswordChar = txtPassword.PasswordChar == '\u25CF' || txtPassword.PasswordChar == '•' ? '\0' : '•';
+            };
+
+            pnlPassword.Controls.Add(this.txtPassword);
+            pnlPassword.Controls.Add(btnShowPassword);
 
             // Login Button
             this.btnLogin.Text = "Login";
             this.btnLogin.Location = new System.Drawing.Point(centerX, 240);
             this.btnLogin.Size = new System.Drawing.Size(130, 35);
-            this.btnLogin.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.btnLogin.ForeColor = System.Drawing.Color.White;
+            this.btnLogin.BackColor = Color.FromArgb(30, 41, 59); // Lacivert
+            this.btnLogin.ForeColor = Color.White;
             this.btnLogin.FlatStyle = FlatStyle.Flat;
+            this.btnLogin.FlatAppearance.BorderColor = Color.FromArgb(245, 158, 66); // Turuncu
+            this.btnLogin.FlatAppearance.BorderSize = 2;
             this.btnLogin.Click += new EventHandler(BtnLogin_Click);
 
             // Sign Up Button
             this.btnSignUp.Text = "Sign Up";
             this.btnSignUp.Location = new System.Drawing.Point(centerX + 150, 240);
             this.btnSignUp.Size = new System.Drawing.Size(130, 35);
-            this.btnSignUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(123)))), ((int)(((byte)(255)))));
-            this.btnSignUp.ForeColor = System.Drawing.Color.White;
+            this.btnSignUp.BackColor = Color.FromArgb(51, 65, 85); // Koyu gri
+            this.btnSignUp.ForeColor = Color.White;
             this.btnSignUp.FlatStyle = FlatStyle.Flat;
+            this.btnSignUp.FlatAppearance.BorderColor = Color.FromArgb(30, 41, 59); // Lacivert
+            this.btnSignUp.FlatAppearance.BorderSize = 2;
             this.btnSignUp.Click += new EventHandler(BtnSignUp_Click);
 
             // Switch Panel
@@ -121,7 +145,7 @@ namespace MyProject.Forms
             this.lblClient.Location = new System.Drawing.Point(0, 0);
             this.lblClient.TextAlign = ContentAlignment.MiddleCenter;
             this.lblClient.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblClient.ForeColor = Color.FromArgb(76, 175, 80); // Yeşil
+            this.lblClient.ForeColor = Color.FromArgb(245, 158, 66); // Turuncu (aktif)
             this.lblClient.Cursor = Cursors.Hand;
             this.lblClient.BackColor = Color.Transparent;
             this.lblClient.Click += Switch_Click;
@@ -133,7 +157,7 @@ namespace MyProject.Forms
             this.lblAdmin.Location = new System.Drawing.Point(110, 0);
             this.lblAdmin.TextAlign = ContentAlignment.MiddleCenter;
             this.lblAdmin.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
-            this.lblAdmin.ForeColor = Color.FromArgb(100, 100, 100);
+            this.lblAdmin.ForeColor = Color.FromArgb(51, 65, 85); // Koyu gri (pasif)
             this.lblAdmin.Cursor = Cursors.Hand;
             this.lblAdmin.BackColor = Color.Transparent;
             this.lblAdmin.Click += Switch_Click;
@@ -145,7 +169,7 @@ namespace MyProject.Forms
             this.pnlSlider.BackColor = Color.Transparent;
             this.pnlSlider.Paint += (sender, e) => {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                Color sliderColor = isAdmin ? Color.FromArgb(33, 150, 243) : Color.FromArgb(76, 175, 80);
+                Color sliderColor = isAdmin ? Color.FromArgb(30, 41, 59) : Color.FromArgb(245, 158, 66); // Admin: lacivert, Client: turuncu
                 using (var brush = new SolidBrush(sliderColor))
                 {
                     e.Graphics.FillEllipse(brush, 0, 0, 36, 36);
@@ -163,7 +187,7 @@ namespace MyProject.Forms
             this.Controls.Add(this.lblEmail);
             this.Controls.Add(this.txtEmail);
             this.Controls.Add(this.lblPassword);
-            this.Controls.Add(this.txtPassword);
+            this.Controls.Add(pnlPassword);
             this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.btnSignUp);
             this.Controls.Add(this.pnlSwitch);
@@ -254,15 +278,15 @@ namespace MyProject.Forms
             {
                 // Slider sağa
                 pnlSlider.Left = pnlSwitch.Width - pnlSlider.Width - 2;
-                lblAdmin.ForeColor = Color.FromArgb(33, 150, 243); // Mavi
-                lblClient.ForeColor = Color.FromArgb(100, 100, 100);
+                lblAdmin.ForeColor = Color.FromArgb(245, 158, 66); // Turuncu (aktif)
+                lblClient.ForeColor = Color.FromArgb(51, 65, 85); // Koyu gri (pasif)
             }
             else
             {
                 // Slider sola
                 pnlSlider.Left = 2;
-                lblClient.ForeColor = Color.FromArgb(76, 175, 80); // Yeşil
-                lblAdmin.ForeColor = Color.FromArgb(100, 100, 100);
+                lblClient.ForeColor = Color.FromArgb(245, 158, 66); // Turuncu (aktif)
+                lblAdmin.ForeColor = Color.FromArgb(51, 65, 85); // Koyu gri (pasif)
             }
             pnlSlider.Invalidate();
         }
