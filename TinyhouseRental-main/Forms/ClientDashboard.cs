@@ -6,6 +6,8 @@ using MyProject.Config;
 using MyProject.Models;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace MyProject.Forms
 {
@@ -869,16 +871,34 @@ namespace MyProject.Forms
             {
                 // Get the ImageUrl from the selected row
                 DataGridViewRow selectedRow = dgvListings.Rows[e.RowIndex];
-                string imageUrl = selectedRow.Cells["ImageUrl"].Value?.ToString();
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
 
-                if (!string.IsNullOrEmpty(imageUrl))
+                if (!string.IsNullOrEmpty(imageUrlsString))
                 {
-                    // Construct the absolute path to the image file
-                    string imagePath = Path.Combine(Application.StartupPath, imageUrl);
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
 
-                    // Show the image in a new form
-                    ImageViewerForm imageViewer = new ImageViewerForm(imagePath);
-                    imageViewer.ShowDialog();
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Listing için geçerli görsel yolu bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
                 else
                 {

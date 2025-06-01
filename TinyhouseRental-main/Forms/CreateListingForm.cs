@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using MyProject.Config;
 using MyProject.Models;
 using System.IO;
+using System.Collections.Generic;
 
 namespace MyProject.Forms
 {
@@ -20,11 +21,12 @@ namespace MyProject.Forms
         private Label lblPrice;
         private Button btnAddImage;
         private Label lblSelectedImage;
-        private string _selectedImagePath;
+        private List<string> _selectedImagePaths;
 
         public CreateListingForm(Client client)
         {
             _client = client;
+            _selectedImagePaths = new List<string>();
             InitializeComponent();
         }
 
@@ -133,20 +135,30 @@ namespace MyProject.Forms
 
         private void BtnCreate_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtTitle.Text) || string.IsNullOrWhiteSpace(txtDescription.Text) || string.IsNullOrEmpty(_selectedImagePath))
+            if (string.IsNullOrWhiteSpace(txtTitle.Text) || string.IsNullOrWhiteSpace(txtDescription.Text) || _selectedImagePaths.Count == 0)
             {
-                MessageBox.Show("Lütfen tüm gerekli alanları doldurun ve bir görsel seçin.", "Create Listing",
+                MessageBox.Show("Lütfen tüm gerekli alanları doldurun ve en az bir görsel seçin.", "Create Listing",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-                // Görseli kaydet
-                string imageName = Guid.NewGuid().ToString() + Path.GetExtension(_selectedImagePath);
-                string imagePath = Path.Combine(Application.StartupPath, "Images", imageName);
-                Directory.CreateDirectory(Path.GetDirectoryName(imagePath)); // Klasörü oluştur
-                File.Copy(_selectedImagePath, imagePath);
+                // Görselleri kaydet ve yollarını topla
+                List<string> savedImageUrls = new List<string>();
+                string imagesDirectory = Path.Combine(Application.StartupPath, "Images");
+                Directory.CreateDirectory(imagesDirectory); // Klasörü oluştur
+
+                foreach (string selectedPath in _selectedImagePaths)
+                {
+                    string imageName = Guid.NewGuid().ToString() + Path.GetExtension(selectedPath);
+                    string destinationPath = Path.Combine(imagesDirectory, imageName);
+                    File.Copy(selectedPath, destinationPath);
+                    savedImageUrls.Add("Images/" + imageName); // Veritabanına göreceli yolu ekle
+                }
+
+                // Görsel yollarını virgülle birleştir
+                string imageUrlsString = string.Join(",", savedImageUrls);
 
                 // Veritabanına kaydet
                 using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
@@ -162,7 +174,7 @@ namespace MyProject.Forms
                         command.Parameters.AddWithValue("@Title", txtTitle.Text);
                         command.Parameters.AddWithValue("@Description", txtDescription.Text);
                         command.Parameters.AddWithValue("@Price", numPrice.Value);
-                        command.Parameters.AddWithValue("@ImageUrl", "Images/" + imageName); // Veritabanına göreceli yolu kaydet
+                        command.Parameters.AddWithValue("@ImageUrl", imageUrlsString); // Virgülle ayrılmış yolları kaydet
 
                         command.ExecuteNonQuery();
                     }
@@ -191,12 +203,14 @@ namespace MyProject.Forms
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp";
             openFileDialog.Title = "Görsel Seçin";
+            openFileDialog.Multiselect = true; // Birden fazla seçime izin ver
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Seçilen dosyanın yolunu sakla ve label'da göster
-                _selectedImagePath = openFileDialog.FileName;
-                lblSelectedImage.Text = Path.GetFileName(_selectedImagePath); // Sadece dosya adını göster
+                // Seçilen dosyaların yollarını listeye ekle
+                _selectedImagePaths.AddRange(openFileDialog.FileNames);
+                // Seçilen dosya sayısını label'da göster
+                lblSelectedImage.Text = $"{_selectedImagePaths.Count} görsel seçildi.";
             }
         }
     }
