@@ -74,8 +74,8 @@ namespace MyProject.Forms
             this.pnlTopBar.BorderStyle = BorderStyle.None;
             this.pnlTopBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
-            // Logout Button
-            this.btnLogout.Text = "Çıkış Yap";
+            // Çıkış Yap Butonu : Uygulamadan çıkıyor direkt
+            this.btnLogout.Text = "Kapat";
             this.btnLogout.Size = new System.Drawing.Size(100, 35);
             this.btnLogout.Location = new System.Drawing.Point(this.pnlTopBar.Width - 125, 10);
             this.btnLogout.FlatStyle = FlatStyle.Flat;
@@ -98,11 +98,11 @@ namespace MyProject.Forms
             this.btnSwitchAccount.Click += BtnSwitchAccount_Click;
             this.btnSwitchAccount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // Panel'e butonları ekle
+            // Panele butonları ekle
             this.pnlTopBar.Controls.Add(this.btnSwitchAccount);
             this.pnlTopBar.Controls.Add(this.btnLogout);
 
-            // Tab Control
+            // Tab kısmı
             this.tabControl.Location = new System.Drawing.Point(0, this.pnlTopBar.Height);
             this.tabControl.Size = new System.Drawing.Size(this.Width, this.Height - this.pnlTopBar.Height);
             this.tabControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -114,15 +114,15 @@ namespace MyProject.Forms
                 this.tabReservations
             });
 
-            // Users Tab
-            this.tabUsers.Text = "User Management";
+            // Kullanıcıların yönetildiği kısım
+            this.tabUsers.Text = "Kullanıcı Yönetimi";
             this.tabUsers.BackColor = System.Drawing.Color.White;
             this.tabUsers.Padding = new Padding(15);
             this.tabUsers.Controls.Add(this.dgvUsers);
             this.tabUsers.Controls.Add(this.btnFreezeUser);
             this.tabUsers.Controls.Add(this.btnUnfreezeUser);
 
-            // Users DataGridView
+            // Kullanıcıları görüntülediğimiz yer
             this.dgvUsers.Dock = DockStyle.Top;
             this.dgvUsers.Height = 500;
             this.dgvUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -152,8 +152,8 @@ namespace MyProject.Forms
             this.dgvUsers.CellFormatting += DgvUsers_CellFormatting;
             this.dgvUsers.DataError += (s, e) => { e.ThrowException = false; };
 
-            // Freeze User Button
-            this.btnFreezeUser.Text = "Freeze User";
+            // Bu buton kullanıcıyı donduruyor
+            this.btnFreezeUser.Text = "Kullaniciyi Dondur";
             this.btnFreezeUser.Location = new System.Drawing.Point(170, 520);
             this.btnFreezeUser.Size = new System.Drawing.Size(150, 35);
             this.btnFreezeUser.FlatStyle = FlatStyle.Flat;
@@ -163,8 +163,8 @@ namespace MyProject.Forms
             this.btnFreezeUser.Cursor = Cursors.Hand;
             this.btnFreezeUser.Click += new EventHandler(BtnFreezeUser_Click);
 
-            // Unfreeze User Button
-            this.btnUnfreezeUser.Text = "Unfreeze User";
+            // Bu botun kullanıcının dondurmasını açıyor
+            this.btnUnfreezeUser.Text = "Kullaniciyi Aktiflestir";
             this.btnUnfreezeUser.Location = new System.Drawing.Point(10, 520);
             this.btnUnfreezeUser.Size = new System.Drawing.Size(150, 35);
             this.btnUnfreezeUser.FlatStyle = FlatStyle.Flat;
@@ -174,15 +174,15 @@ namespace MyProject.Forms
             this.btnUnfreezeUser.Cursor = Cursors.Hand;
             this.btnUnfreezeUser.Click += new EventHandler(BtnUnfreezeUser_Click);
 
-            // Listings Tab
-            this.tabListings.Text = "Listing Management";
+            // Listelemelerin yönetildiği kısım, buraya tıklandığında direkt listelemeler açılıyor
+            this.tabListings.Text = "Listeleme Yönetimi";
             this.tabListings.BackColor = System.Drawing.Color.White;
             this.tabListings.Padding = new Padding(15);
             this.tabListings.Controls.Add(this.dgvListings);
             this.tabListings.Controls.Add(this.btnActivateListing);
             this.tabListings.Controls.Add(this.btnDeactivateListing);
 
-            // Listings DataGridView
+            // Listelemelerin görüntülendiği kısım, tıklandığında açılıyor
             this.dgvListings.Dock = DockStyle.Top;
             this.dgvListings.Height = 500;
             this.dgvListings.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -212,7 +212,7 @@ namespace MyProject.Forms
             this.dgvListings.CellFormatting += DgvListings_CellFormatting;
             this.dgvListings.DataError += (s, e) => { e.ThrowException = false; };
 
-            // Add a button column for showing image in Listings
+            // Burada listelemede görsel göüzkmesi ayarlanıyor
             DataGridViewButtonColumn viewListingImageButtonColumn = new DataGridViewButtonColumn();
             viewListingImageButtonColumn.HeaderText = "Görsel";
             viewListingImageButtonColumn.Text = "Göster";
@@ -220,11 +220,11 @@ namespace MyProject.Forms
             viewListingImageButtonColumn.Name = "viewListingImageColumn";
             this.dgvListings.Columns.Add(viewListingImageButtonColumn);
 
-            // Handle button clicks in dgvListings
+            
             this.dgvListings.CellContentClick += new DataGridViewCellEventHandler(DgvListings_CellContentClick);
 
-            // Activate Listing Button
-            this.btnActivateListing.Text = "Activate Listing";
+            // İlgili listelemeyi aktifleştiren buton
+            this.btnActivateListing.Text = "Listeyi Aktiflestir";
             this.btnActivateListing.Location = new System.Drawing.Point(10, 520);
             this.btnActivateListing.Size = new System.Drawing.Size(150, 35);
             this.btnActivateListing.FlatStyle = FlatStyle.Flat;
@@ -234,8 +234,8 @@ namespace MyProject.Forms
             this.btnActivateListing.Cursor = Cursors.Hand;
             this.btnActivateListing.Click += new EventHandler(BtnActivateListing_Click);
 
-            // Deactivate Listing Button
-            this.btnDeactivateListing.Text = "Deactivate Listing";
+            // Listelemeyi donduran, deaktive eden buton
+            this.btnDeactivateListing.Text = "Listeyi Dondur";
             this.btnDeactivateListing.Location = new System.Drawing.Point(170, 520);
             this.btnDeactivateListing.Size = new System.Drawing.Size(150, 35);
             this.btnDeactivateListing.FlatStyle = FlatStyle.Flat;
@@ -245,8 +245,8 @@ namespace MyProject.Forms
             this.btnDeactivateListing.Cursor = Cursors.Hand;
             this.btnDeactivateListing.Click += new EventHandler(BtnDeactivateListing_Click);
 
-            // Reservations Tab
-            this.tabReservations.Text = "Reservation Management";
+            // Rezervasyonların yönetildiği kısım, buraya tıklandığında rezervasyonlar görüntüleniyor
+            this.tabReservations.Text = "Rezervasyon Yönetimi";
             this.tabReservations.BackColor = System.Drawing.Color.White;
             this.tabReservations.Padding = new Padding(15);
             this.tabReservations.Controls.Add(this.dgvReservations);
@@ -255,7 +255,7 @@ namespace MyProject.Forms
             this.tabReservations.Controls.Add(this.btnMarkAsPaid);
             this.tabReservations.Controls.Add(this.btnMarkAsUnpaid);
 
-            // Reservations DataGridView
+            // Rezervasyonların görüntülendiği yer
             this.dgvReservations.Dock = DockStyle.Top;
             this.dgvReservations.Height = 500;
             this.dgvReservations.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -291,7 +291,7 @@ namespace MyProject.Forms
                     dgvReservations.CommitEdit(DataGridViewDataErrorContexts.Commit);
             };
 
-            // Add a button column for showing image in Reservations
+            // Rezervasyon kısmında buradaki buton görselleri görmemize yarıyor
             DataGridViewButtonColumn viewReservationImageButtonColumn = new DataGridViewButtonColumn();
             viewReservationImageButtonColumn.HeaderText = "Görsel";
             viewReservationImageButtonColumn.Text = "Göster";
@@ -299,10 +299,10 @@ namespace MyProject.Forms
             viewReservationImageButtonColumn.Name = "viewReservationImageColumn";
             this.dgvReservations.Columns.Add(viewReservationImageButtonColumn);
 
-            // Handle button clicks in dgvReservations
+            // 
             this.dgvReservations.CellContentClick += new DataGridViewCellEventHandler(DgvReservations_CellContentClick);
 
-            // Approve Reservation Button
+            // Rezervasyonlar bu butondan onaylanıyor
             this.btnApproveReservation.Text = "Approve Reservation";
             this.btnApproveReservation.Location = new System.Drawing.Point(10, 520);
             this.btnApproveReservation.Size = new System.Drawing.Size(180, 35);
@@ -313,7 +313,7 @@ namespace MyProject.Forms
             this.btnApproveReservation.Cursor = Cursors.Hand;
             this.btnApproveReservation.Click += new EventHandler(BtnApproveReservation_Click);
 
-            // Cancel Reservation Button
+            // Bu butondan rezervasyonlar iptal ediliyor
             this.btnCancelReservation.Text = "Cancel Reservation";
             this.btnCancelReservation.Location = new System.Drawing.Point(200, 520);
             this.btnCancelReservation.Size = new System.Drawing.Size(180, 35);
@@ -324,7 +324,7 @@ namespace MyProject.Forms
             this.btnCancelReservation.Cursor = Cursors.Hand;
             this.btnCancelReservation.Click += new EventHandler(BtnCancelReservation_Click);
 
-            // Mark as Paid Button
+            // Ödeme yapıldı butonu
             this.btnMarkAsPaid.Text = "Mark as Paid";
             this.btnMarkAsPaid.Location = new System.Drawing.Point(400, 520);
             this.btnMarkAsPaid.Size = new System.Drawing.Size(150, 35);
@@ -335,7 +335,7 @@ namespace MyProject.Forms
             this.btnMarkAsPaid.Cursor = Cursors.Hand;
             this.btnMarkAsPaid.Click += new EventHandler(BtnMarkAsPaid_Click);
 
-            // Mark as Unpaid Button
+            // Ödeme yapılmadı butonu
             this.btnMarkAsUnpaid.Text = "Mark as Unpaid";
             this.btnMarkAsUnpaid.Location = new System.Drawing.Point(560, 520);
             this.btnMarkAsUnpaid.Size = new System.Drawing.Size(150, 35);
@@ -346,7 +346,7 @@ namespace MyProject.Forms
             this.btnMarkAsUnpaid.Cursor = Cursors.Hand;
             this.btnMarkAsUnpaid.Click += new EventHandler(BtnMarkAsUnpaid_Click);
 
-            // Add controls to form
+            // panele top bar ve tab control ekliyor
             this.Controls.Add(this.pnlTopBar);
             this.Controls.Add(this.tabControl);
         }
@@ -357,8 +357,8 @@ namespace MyProject.Forms
             {
                 using (var connection = new System.Data.SqlClient.SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
-                    connection.Open();
-                    string query = @"
+                    connection.Open(); // Veritabanına bağlanıyor
+                    string query = @" 
                         SELECT 
                             userID AS [UserID],
                             email AS [Email],
@@ -368,15 +368,15 @@ namespace MyProject.Forms
                             'Client' AS [Type],
                             userState AS [State]
                         FROM Users
-                        WHERE userTypeId = 1";
+                        WHERE userTypeId = 1"; // Kullanıcı yönetim kısmındaki kullanıcıların listesini veritabanından çağırıyor
 
-                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection))
-                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command))
+                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection)) // Veritabanından sorgu çekiyor
+                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command)) 
                     {
                         var dt = new System.Data.DataTable();
                         adapter.Fill(dt);
                         dgvUsers.DataSource = dt;
-                        // State sütununu kaldırıp yerine string tipinde bir sütun ekle
+                        
                         if (dgvUsers.Columns["State"] != null)
                         {
                             int stateIndex = dgvUsers.Columns["State"].Index;
@@ -408,17 +408,17 @@ namespace MyProject.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Kullanicilar yuklenirken bir hata olustu: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void LoadListings()
+        private void LoadListings() // Listelemeleri listelediğimiz metod
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
-                    connection.Open();
+                    connection.Open(); 
                     string query = @"
                         SELECT 
                             l.listingID,
@@ -426,10 +426,10 @@ namespace MyProject.Forms
                             l.listingTitle,
                             l.rentalPrice,
                             l.listingState,
-                            l.ImageUrl -- ImageUrl sütununu ekledik
+                            l.ImageUrl 
                         FROM Listings l
                         INNER JOIN Users u ON l.userID = u.userID
-                        ORDER BY l.listingID DESC";
+                        ORDER BY l.listingID DESC"; // Listeleri veritabanından çağıran kısım burası
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -439,19 +439,19 @@ namespace MyProject.Forms
                             dt.Load(reader);
                             dgvListings.DataSource = dt;
 
-                            // Configure column headers
+                            // 
                             if (dgvListings.Columns.Contains("listingID")) dgvListings.Columns["listingID"].Visible = false;
                             if (dgvListings.Columns.Contains("ownerName")) dgvListings.Columns["ownerName"].HeaderText = "Owner";
                             if (dgvListings.Columns.Contains("listingTitle")) dgvListings.Columns["listingTitle"].HeaderText = "Title";
                             if (dgvListings.Columns.Contains("rentalPrice")) dgvListings.Columns["rentalPrice"].HeaderText = "Price (₺)";
                             if (dgvListings.Columns.Contains("listingState")) dgvListings.Columns["listingState"].HeaderText = "State";
 
-                            // ImageUrl sütununu gizle
+                            // ImageUrl sütununu gizlediğimiz yer
                             if (dgvListings.Columns.Contains("ImageUrl"))
                             {
                                 dgvListings.Columns["ImageUrl"].Visible = false;
                             }
-                             // Görsel butonu sütununu en sağa taşı (varsa)
+                             // Görsel butonu sütununu en sağa taşıyoruz burada
                             if (dgvListings.Columns.Contains("viewListingImageColumn"))
                             {
                                 dgvListings.Columns["viewListingImageColumn"].DisplayIndex = dgvListings.Columns.Count - 1;
@@ -462,7 +462,7 @@ namespace MyProject.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading listings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Listelemeler yüklenirken bir hata oluştu : {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -488,10 +488,10 @@ namespace MyProject.Forms
                                 WHEN r.reservationState = 1 THEN 'Active'
                                 ELSE 'Inactive'
                             END as ReservationStatus,
-                            l.ImageUrl -- ImageUrl sütununu ekledik
+                            l.ImageUrl 
                         FROM Reservations r
                         INNER JOIN Users u ON r.userId = u.userID
-                        INNER JOIN Listings l ON r.listingId = l.listingId -- Listings tablosunu JOIN ettik
+                        INNER JOIN Listings l ON r.listingId = l.listingId 
                         ORDER BY r.checkInDate DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
