@@ -256,6 +256,17 @@ namespace MyProject.Forms
             this.dgvReservations.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvReservations.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
 
+            // Add a button column for showing image in Reservations
+            DataGridViewButtonColumn viewReservationImageButtonColumn = new DataGridViewButtonColumn();
+            viewReservationImageButtonColumn.HeaderText = "Görsel";
+            viewReservationImageButtonColumn.Text = "Göster";
+            viewReservationImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewReservationImageButtonColumn.Name = "viewReservationImageColumn";
+            this.dgvReservations.Columns.Add(viewReservationImageButtonColumn);
+
+            // Handle button clicks in dgvReservations
+            this.dgvReservations.CellContentClick += new DataGridViewCellEventHandler(DgvReservations_CellContentClick);
+
             // Cancel Reservation Button
             this.btnCancelReservation.Text = "Cancel Reservation";
             this.btnCancelReservation.Location = new System.Drawing.Point(10, 420);
@@ -300,6 +311,17 @@ namespace MyProject.Forms
             this.dgvMyListings.ReadOnly = true;
             this.dgvMyListings.AllowUserToResizeColumns = false;
             this.dgvMyListings.AllowUserToResizeRows = false;
+
+            // Add a button column for showing image in My Listings
+            DataGridViewButtonColumn viewMyListingImageButtonColumn = new DataGridViewButtonColumn();
+            viewMyListingImageButtonColumn.HeaderText = "Görsel";
+            viewMyListingImageButtonColumn.Text = "Göster";
+            viewMyListingImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewMyListingImageButtonColumn.Name = "viewMyListingImageColumn";
+            this.dgvMyListings.Columns.Add(viewMyListingImageButtonColumn);
+
+            // Handle button clicks in dgvMyListings
+            this.dgvMyListings.CellContentClick += new DataGridViewCellEventHandler(DgvMyListings_CellContentClick);
 
             // Column Headers Style for My Listings
             this.dgvMyListings.ColumnHeadersHeight = 40;
@@ -563,9 +585,10 @@ namespace MyProject.Forms
                                 WHEN r.reservationState = 1 THEN 'Active'
                                 ELSE 'Inactive'
                             END as ReservationStatus,
-                            '' as SpecialRequests
+                            '' as SpecialRequests,
+                            l.ImageUrl -- ImageUrl sütununu ekledik
                         FROM Reservations r
-                        INNER JOIN Listings l ON r.listingId = l.listingId
+                        INNER JOIN Listings l ON r.listingId = l.listingId -- Listings tablosunu JOIN ettik
                         WHERE r.userId = @UserID
                         ORDER BY r.checkInDate DESC";
 
@@ -615,6 +638,11 @@ namespace MyProject.Forms
                                     row.Cells["PaymentStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
                                 }
                             }
+                            // ImageUrl sütununu gizle
+                            if (dgvReservations.Columns.Contains("ImageUrl"))
+                            {
+                                dgvReservations.Columns["ImageUrl"].Visible = false;
+                            }
                         }
                     }
                 }
@@ -639,7 +667,8 @@ namespace MyProject.Forms
                             l.listingTitle,
                             l.rentalPrice,
                             l.listingState,
-                            l.listingDescription
+                            l.listingDescription,
+                            l.ImageUrl -- ImageUrl sütununu ekledik
                         FROM Listings l
                         INNER JOIN Users u ON l.userID = u.userID
                         WHERE l.userID = @CurrentUserID 
@@ -664,6 +693,11 @@ namespace MyProject.Forms
                                 dgvMyListings.Columns["rentalPrice"].HeaderText = "Price (₺)";
                                 dgvMyListings.Columns["listingState"].Visible = false;
                                 dgvMyListings.Columns["listingDescription"].HeaderText = "Description";
+                            }
+                            // ImageUrl sütununu gizle
+                            if (dgvMyListings.Columns.Contains("ImageUrl"))
+                            {
+                                dgvMyListings.Columns["ImageUrl"].Visible = false;
                             }
                         }
                     }
@@ -871,6 +905,94 @@ namespace MyProject.Forms
             {
                 // Get the ImageUrl from the selected row
                 DataGridViewRow selectedRow = dgvListings.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Listing için geçerli görsel yolu bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Bu listing için görsel bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Handle button clicks in dgvMyListings
+        private void DgvMyListings_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex == dgvMyListings.Columns["viewMyListingImageColumn"].Index && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvMyListings.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Listing için geçerli görsel yolu bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Bu listing için görsel bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Handle button clicks in dgvReservations
+        private void DgvReservations_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex == dgvReservations.Columns["viewReservationImageColumn"].Index && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvReservations.Rows[e.RowIndex];
                 string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
 
                 if (!string.IsNullOrEmpty(imageUrlsString))
