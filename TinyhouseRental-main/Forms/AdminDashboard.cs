@@ -2,6 +2,9 @@ using System;
 using System.Windows.Forms;
 using MyProject.Models;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.IO;
+using System.Data;
 
 namespace MyProject.Forms
 {
@@ -207,6 +210,18 @@ namespace MyProject.Forms
             this.dgvListings.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvListings.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
             this.dgvListings.CellFormatting += DgvListings_CellFormatting;
+            this.dgvListings.DataError += (s, e) => { e.ThrowException = false; };
+
+            // Add a button column for showing image in Listings
+            DataGridViewButtonColumn viewListingImageButtonColumn = new DataGridViewButtonColumn();
+            viewListingImageButtonColumn.HeaderText = "Görsel";
+            viewListingImageButtonColumn.Text = "Göster";
+            viewListingImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewListingImageButtonColumn.Name = "viewListingImageColumn";
+            this.dgvListings.Columns.Add(viewListingImageButtonColumn);
+
+            // Handle button clicks in dgvListings
+            this.dgvListings.CellContentClick += new DataGridViewCellEventHandler(DgvListings_CellContentClick);
 
             // Activate Listing Button
             this.btnActivateListing.Text = "Activate Listing";
@@ -267,7 +282,7 @@ namespace MyProject.Forms
             this.dgvReservations.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(230, 240, 255);
             this.dgvReservations.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvReservations.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
-            this.dgvReservations.CellFormatting -= DgvReservations_CellFormatting;
+            this.dgvReservations.CellFormatting += DgvReservations_CellFormatting;
             this.dgvReservations.DataError += (s, e) => { e.ThrowException = false; };
             this.dgvReservations.CellValueChanged += DgvReservations_CellValueChanged;
             this.dgvReservations.CurrentCellDirtyStateChanged += (s, e) =>
@@ -275,6 +290,17 @@ namespace MyProject.Forms
                 if (dgvReservations.IsCurrentCellDirty)
                     dgvReservations.CommitEdit(DataGridViewDataErrorContexts.Commit);
             };
+
+            // Add a button column for showing image in Reservations
+            DataGridViewButtonColumn viewReservationImageButtonColumn = new DataGridViewButtonColumn();
+            viewReservationImageButtonColumn.HeaderText = "Görsel";
+            viewReservationImageButtonColumn.Text = "Göster";
+            viewReservationImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewReservationImageButtonColumn.Name = "viewReservationImageColumn";
+            this.dgvReservations.Columns.Add(viewReservationImageButtonColumn);
+
+            // Handle button clicks in dgvReservations
+            this.dgvReservations.CellContentClick += new DataGridViewCellEventHandler(DgvReservations_CellContentClick);
 
             // Approve Reservation Button
             this.btnApproveReservation.Text = "Approve Reservation";
@@ -390,37 +416,46 @@ namespace MyProject.Forms
         {
             try
             {
-                using (var connection = new System.Data.SqlClient.SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
+                using (SqlConnection connection = new SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
                     connection.Open();
                     string query = @"
                         SELECT 
-                            listingID,
-                            userId,
-                            listingTitle,
-                            rentalPrice,
-                            listingState,
-                            listingDescription
-                        FROM Listings";
+                            l.listingID,
+                            CONCAT(u.name, ' ', u.surname) as ownerName,
+                            l.listingTitle,
+                            l.rentalPrice,
+                            l.listingState,
+                            l.ImageUrl -- ImageUrl sütununu ekledik
+                        FROM Listings l
+                        INNER JOIN Users u ON l.userID = u.userID
+                        ORDER BY l.listingID DESC";
 
-                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection))
-                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command))
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        var dt = new System.Data.DataTable();
-                        adapter.Fill(dt);
-                        dgvListings.DataSource = dt;
-                        // ListingState sütununu görsel olarak düzenle
-                        if (dgvListings.Columns["listingState"] != null)
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            int stateIndex = dgvListings.Columns["listingstate"].Index;
-                            dgvListings.Columns.Remove("listingstate");
-                            var col = new DataGridViewTextBoxColumn();
-                            col.Name = "listingstate";
-                            col.HeaderText = "State";
-                            col.DataPropertyName = "listingstate";
-                            col.ReadOnly = true;
-                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-                            dgvListings.Columns.Insert(stateIndex, col);
+                            DataTable dt = new DataTable();
+                            dt.Load(reader);
+                            dgvListings.DataSource = dt;
+
+                            // Configure column headers
+                            if (dgvListings.Columns.Contains("listingID")) dgvListings.Columns["listingID"].Visible = false;
+                            if (dgvListings.Columns.Contains("ownerName")) dgvListings.Columns["ownerName"].HeaderText = "Owner";
+                            if (dgvListings.Columns.Contains("listingTitle")) dgvListings.Columns["listingTitle"].HeaderText = "Title";
+                            if (dgvListings.Columns.Contains("rentalPrice")) dgvListings.Columns["rentalPrice"].HeaderText = "Price (₺)";
+                            if (dgvListings.Columns.Contains("listingState")) dgvListings.Columns["listingState"].HeaderText = "State";
+
+                            // ImageUrl sütununu gizle
+                            if (dgvListings.Columns.Contains("ImageUrl"))
+                            {
+                                dgvListings.Columns["ImageUrl"].Visible = false;
+                            }
+                             // Görsel butonu sütununu en sağa taşı (varsa)
+                            if (dgvListings.Columns.Contains("viewListingImageColumn"))
+                            {
+                                dgvListings.Columns["viewListingImageColumn"].DisplayIndex = dgvListings.Columns.Count - 1;
+                            }
                         }
                     }
                 }
@@ -435,52 +470,86 @@ namespace MyProject.Forms
         {
             try
             {
-                using (var connection = new System.Data.SqlClient.SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
+                using (SqlConnection connection = new SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
                     connection.Open();
                     string query = @"
                         SELECT 
-                            reservationID,
-                            userID,
-                            listingId,
-                            checkInDate,
-                            checkOutDate,
-                            reservationState,
-                            IsPaid,
-                            CancellationReason
-                        FROM Reservations";
+                            r.reservationID,
+                            CONCAT(u.name, ' ', u.surname) as userName,
+                            l.listingTitle,
+                            r.checkInDate,
+                            r.checkOutDate,
+                            CASE 
+                                WHEN r.IsPaid = 1 THEN 'Paid'
+                                ELSE 'Unpaid'
+                            END as PaymentStatus,
+                            CASE 
+                                WHEN r.reservationState = 1 THEN 'Active'
+                                ELSE 'Inactive'
+                            END as ReservationStatus,
+                            l.ImageUrl -- ImageUrl sütununu ekledik
+                        FROM Reservations r
+                        INNER JOIN Users u ON r.userId = u.userID
+                        INNER JOIN Listings l ON r.listingId = l.listingId -- Listings tablosunu JOIN ettik
+                        ORDER BY r.checkInDate DESC";
 
-                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection))
-                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command))
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        var dt = new System.Data.DataTable();
-                        adapter.Fill(dt);
-                        dgvReservations.DataSource = dt;
-                        // Sütunları checkbox olarak ayarla
-                        var checkColumns = new List<string> { "reservationState", "IsPaid" };
-                        var toChange = new List<int>();
-                        for (int i = 0; i < dgvReservations.Columns.Count; i++)
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+                        dgvReservations.DataSource = dataTable;
+
+                        // Format the columns
+                        if (dgvReservations.Columns.Contains("reservationID")) dgvReservations.Columns["reservationID"].Visible = false;
+                        if (dgvReservations.Columns.Contains("userName")) dgvReservations.Columns["userName"].HeaderText = "User";
+                        if (dgvReservations.Columns.Contains("listingTitle")) dgvReservations.Columns["listingTitle"].HeaderText = "Listing";
+                        if (dgvReservations.Columns.Contains("checkInDate")) dgvReservations.Columns["checkInDate"].HeaderText = "Check-in Date";
+                        if (dgvReservations.Columns.Contains("checkOutDate")) dgvReservations.Columns["checkOutDate"].HeaderText = "Check-out Date";
+                        if (dgvReservations.Columns.Contains("PaymentStatus")) dgvReservations.Columns["PaymentStatus"].HeaderText = "Payment Status";
+                        if (dgvReservations.Columns.Contains("ReservationStatus")) dgvReservations.Columns["ReservationStatus"].HeaderText = "Status";
+
+                        // Status sütununun görünümünü özelleştir
+                        foreach (DataGridViewRow row in dgvReservations.Rows)
                         {
-                            if (checkColumns.Contains(dgvReservations.Columns[i].Name))
-                                toChange.Add(i);
+                            if (row.Cells["ReservationStatus"].Value != null)
+                            {
+                                if (row.Cells["ReservationStatus"].Value.ToString() == "Active")
+                                {
+                                    row.Cells["ReservationStatus"].Style.ForeColor = System.Drawing.Color.Green;
+                                    row.Cells["ReservationStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                                }
+                                else
+                                {
+                                    row.Cells["ReservationStatus"].Style.ForeColor = System.Drawing.Color.Red;
+                                    row.Cells["ReservationStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                                }
+                            }
+                            // Ödeme durumunu özelleştir
+                            if (row.Cells["PaymentStatus"].Value != null)
+                            {
+                                string paymentStatus = row.Cells["PaymentStatus"].Value.ToString();
+                                row.Cells["PaymentStatus"].Style.ForeColor = paymentStatus == "Paid" ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+                                row.Cells["PaymentStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                            }
                         }
-                        foreach (var idx in toChange)
+                         // ImageUrl sütununu gizle
+                        if (dgvReservations.Columns.Contains("ImageUrl"))
                         {
-                            var col = dgvReservations.Columns[idx];
-                            var checkCol = new DataGridViewCheckBoxColumn();
-                            checkCol.Name = col.Name;
-                            checkCol.HeaderText = col.HeaderText;
-                            checkCol.DataPropertyName = col.DataPropertyName;
-                            checkCol.ReadOnly = false;
-                            dgvReservations.Columns.RemoveAt(idx);
-                            dgvReservations.Columns.Insert(idx, checkCol);
+                            dgvReservations.Columns["ImageUrl"].Visible = false;
                         }
+                         // Görsel butonu sütununu en sağa taşı (varsa)
+                            if (dgvReservations.Columns.Contains("viewReservationImageColumn"))
+                            {
+                                dgvReservations.Columns["viewReservationImageColumn"].DisplayIndex = dgvReservations.Columns.Count - 1;
+                            }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading reservations: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading reservations: {ex.Message}\n\nStack Trace: {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -734,7 +803,7 @@ namespace MyProject.Forms
                 }
                 e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-            else if (dgvReservations.Columns[e.ColumnIndex].HeaderText == "IsPaid" && e.Value != null)
+            if (dgvReservations.Columns[e.ColumnIndex].HeaderText == "IsPaid" && e.Value != null)
             {
                 bool isPaid = false;
                 if (e.Value is bool)
@@ -856,6 +925,94 @@ namespace MyProject.Forms
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Application.Exit();
+            }
+        }
+
+        // Handle button clicks in dgvListings (Admin)
+        private void DgvListings_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+             // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex >= 0 && dgvListings.Columns[e.ColumnIndex].Name == "viewListingImageColumn" && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvListings.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Listing için geçerli görsel yolu bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Bu listing için görsel bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Handle button clicks in dgvReservations (Admin)
+        private void DgvReservations_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+             // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex >= 0 && dgvReservations.Columns[e.ColumnIndex].Name == "viewReservationImageColumn" && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvReservations.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Listing için geçerli görsel yolu bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Bu listing için görsel bulunamadı.", "Görsel Yok", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
     }
