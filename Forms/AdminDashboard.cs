@@ -29,6 +29,7 @@ namespace MyProject.Forms
         private Button btnMarkAsPaid;
         private Button btnMarkAsUnpaid;
         private Panel pnlTopBar;
+        private Label lblDateTime;
 
         public AdminDashboard(Admin admin)
         {
@@ -37,6 +38,7 @@ namespace MyProject.Forms
             LoadUsers();
             LoadListings();
             LoadReservations();
+            StartDateTimeUpdate();
         }
 
         private void InitializeComponent()
@@ -59,6 +61,7 @@ namespace MyProject.Forms
             this.btnMarkAsPaid = new Button();
             this.btnMarkAsUnpaid = new Button();
             this.pnlTopBar = new Panel();
+            this.lblDateTime = new Label();
 
             // Form
             this.Text = "Tiny House Rental - Admin Dashboard";
@@ -98,7 +101,16 @@ namespace MyProject.Forms
             this.btnSwitchAccount.Click += BtnSwitchAccount_Click;
             this.btnSwitchAccount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
+            // DateTime Label
+            this.lblDateTime.Size = new System.Drawing.Size(200, 35);
+            this.lblDateTime.Location = new System.Drawing.Point(this.pnlTopBar.Width - 485, 10);
+            this.lblDateTime.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.lblDateTime.ForeColor = System.Drawing.Color.FromArgb(33, 150, 243);
+            this.lblDateTime.TextAlign = ContentAlignment.MiddleRight;
+            this.lblDateTime.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
             // Panele butonları ekle
+            this.pnlTopBar.Controls.Add(this.lblDateTime);
             this.pnlTopBar.Controls.Add(this.btnSwitchAccount);
             this.pnlTopBar.Controls.Add(this.btnLogout);
 
@@ -408,7 +420,7 @@ namespace MyProject.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Kullanicilar yuklenirken bir hata olustu: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"There's an unexpected error while loading Users: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -462,7 +474,7 @@ namespace MyProject.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Listelemeler yüklenirken bir hata oluştu : {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"There's an unexpected error while loading Listings : {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1014,6 +1026,28 @@ namespace MyProject.Forms
                     MessageBox.Show("No image found for this listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+        }
+
+        private void StartDateTimeUpdate()
+        {
+            // İlk güncelleme
+            UpdateDateTime();
+            
+            // Her saniye güncelle
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000; // 1 saniye
+            timer.Tick += (s, e) => UpdateDateTime();
+            timer.Start();
+        }
+
+        private void UpdateDateTime()
+        {
+            if (lblDateTime.InvokeRequired)
+            {
+                lblDateTime.Invoke(new Action(UpdateDateTime));
+                return;
+            }
+            lblDateTime.Text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
         }
     }
 } 

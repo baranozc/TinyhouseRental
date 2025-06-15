@@ -68,7 +68,7 @@ namespace MyProject.Forms
             this.lblPrice.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular);
 
             // Image Upload
-            this.btnAddImage.Text = "Görsel Ekle";
+            this.btnAddImage.Text = "Add Image";
             this.btnAddImage.Location = new System.Drawing.Point(30, 280);
             this.btnAddImage.Size = new System.Drawing.Size(150, 35);
             this.btnAddImage.BackColor = System.Drawing.Color.FromArgb(52, 152, 219); // Mavi
@@ -79,7 +79,7 @@ namespace MyProject.Forms
 
             this.lblSelectedImage.Location = new System.Drawing.Point(200, 285);
             this.lblSelectedImage.Size = new System.Drawing.Size(250, 23);
-            this.lblSelectedImage.Text = "Seçilen görsel yok";
+            this.lblSelectedImage.Text = "There is no selected Image.";
             this.lblSelectedImage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
 
             // TextBoxes and NumericUpDown

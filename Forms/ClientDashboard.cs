@@ -27,6 +27,7 @@ namespace MyProject.Forms
         private Button btnCreateListing;
         private Button btnLogout;
         private Button btnSwitchAccount;
+        private Label lblDateTime;
         private TextBox txtName;
         private TextBox txtSurname;
         private TextBox txtOldPassword;
@@ -53,6 +54,7 @@ namespace MyProject.Forms
             LoadListings();
             LoadReservations();
             LoadMyListings();
+            StartDateTimeUpdate();
         }
 
         private void InitializeComponent()
@@ -70,6 +72,7 @@ namespace MyProject.Forms
             this.btnCreateListing = new Button();
             this.btnLogout = new Button();
             this.btnSwitchAccount = new Button();
+            this.lblDateTime = new Label();
             this.txtName = new TextBox();
             this.txtSurname = new TextBox();
             this.txtOldPassword = new TextBox();
@@ -109,7 +112,7 @@ namespace MyProject.Forms
             this.btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             // Hesap Değiştir Butonu
-            this.btnSwitchAccount.Text = "Hesap Değiştir";
+            this.btnSwitchAccount.Text = "Switch Account";
             this.btnSwitchAccount.Size = new System.Drawing.Size(120, 35);
             this.btnSwitchAccount.Location = new System.Drawing.Point(this.Width - btnLogout.Width - btnSwitchAccount.Width - 35, 10);
             this.btnSwitchAccount.FlatStyle = FlatStyle.Flat;
@@ -119,6 +122,14 @@ namespace MyProject.Forms
             this.btnSwitchAccount.Cursor = Cursors.Hand;
             this.btnSwitchAccount.Click += new EventHandler(BtnSwitchAccount_Click);
             this.btnSwitchAccount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            // DateTime Label
+            this.lblDateTime.Size = new System.Drawing.Size(200, 35);
+            this.lblDateTime.Location = new System.Drawing.Point(this.Width - btnLogout.Width - btnSwitchAccount.Width - 265, 10);
+            this.lblDateTime.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.lblDateTime.ForeColor = Color.FromArgb(245, 158, 66); // Turuncu
+            this.lblDateTime.TextAlign = ContentAlignment.MiddleRight;
+            this.lblDateTime.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             // Tab Control - Adjust position to make room for logout button
             this.tabControl.Location = new Point(0, 60);
@@ -314,8 +325,8 @@ namespace MyProject.Forms
 
             // Add a button column for showing image in My Listings
             DataGridViewButtonColumn viewMyListingImageButtonColumn = new DataGridViewButtonColumn();
-            viewMyListingImageButtonColumn.HeaderText = "Görsel";
-            viewMyListingImageButtonColumn.Text = "Göster";
+            viewMyListingImageButtonColumn.HeaderText = "Image";
+            viewMyListingImageButtonColumn.Text = "Show Image";
             viewMyListingImageButtonColumn.UseColumnTextForButtonValue = true;
             viewMyListingImageButtonColumn.Name = "viewMyListingImageColumn";
             this.dgvMyListings.Columns.Add(viewMyListingImageButtonColumn);
@@ -503,6 +514,7 @@ namespace MyProject.Forms
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnSwitchAccount);
             this.Controls.Add(this.btnLogout);
+            this.Controls.Add(this.lblDateTime);
 
             // Listings DataGridView selection style
             this.dgvListings.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(245, 158, 66); // Turuncu
@@ -911,7 +923,7 @@ namespace MyProject.Forms
                 {
                     // Split the comma-separated string into individual image URLs
                     List<string> imageUrls = imageUrlsString.Split(',').ToList();
-
+    
                     // Construct the absolute paths to the image files
                     List<string> absoluteImagePaths = new List<string>();
                     foreach (string imageUrl in imageUrls)
@@ -1027,6 +1039,28 @@ namespace MyProject.Forms
                     MessageBox.Show("We can't find any image for this Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+        }
+
+        private void StartDateTimeUpdate()
+        {
+            // İlk güncelleme
+            UpdateDateTime();
+            
+            // Her saniye güncelle
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000; // 1 saniye
+            timer.Tick += (s, e) => UpdateDateTime();
+            timer.Start();
+        }
+
+        private void UpdateDateTime()
+        {
+            if (lblDateTime.InvokeRequired)
+            {
+                lblDateTime.Invoke(new Action(UpdateDateTime));
+                return;
+            }
+            lblDateTime.Text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
         }
     }
 } 

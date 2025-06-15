@@ -66,7 +66,7 @@ namespace MyProject.Forms
             this.Controls.Add(this.btnPrevious);
             this.Controls.Add(this.pictureBox);
             this.Name = "ImageViewerForm";
-            this.Text = "Görsel Görüntüleyici";
+            this.Text = "Image Viewer";
             this.Load += new System.EventHandler(this.ImageViewerForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);
