@@ -3,6 +3,8 @@ using System.Data.SqlClient;
 using System.Windows.Forms;
 using MyProject.Config;
 using MyProject.Models;
+using System.IO;
+using System.Collections.Generic;
 
 namespace MyProject.Forms
 {
@@ -17,10 +19,14 @@ namespace MyProject.Forms
         private Label lblTitle;
         private Label lblDescription;
         private Label lblPrice;
+        private Button btnAddImage;
+        private Label lblSelectedImage;
+        private List<string> _selectedImagePaths;
 
         public CreateListingForm(Client client)
         {
             _client = client;
+            _selectedImagePaths = new List<string>();
             InitializeComponent();
         }
 
@@ -34,6 +40,8 @@ namespace MyProject.Forms
             this.lblTitle = new Label();
             this.lblDescription = new Label();
             this.lblPrice = new Label();
+            this.btnAddImage = new Button();
+            this.lblSelectedImage = new Label();
 
             // Form
             this.Text = "Create New Listing";
@@ -59,6 +67,21 @@ namespace MyProject.Forms
             this.lblPrice.Size = new System.Drawing.Size(100, 23);
             this.lblPrice.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular);
 
+            // Image Upload
+            this.btnAddImage.Text = "Görsel Ekle";
+            this.btnAddImage.Location = new System.Drawing.Point(30, 280);
+            this.btnAddImage.Size = new System.Drawing.Size(150, 35);
+            this.btnAddImage.BackColor = System.Drawing.Color.FromArgb(52, 152, 219); // Mavi
+            this.btnAddImage.ForeColor = System.Drawing.Color.White;
+            this.btnAddImage.FlatStyle = FlatStyle.Flat;
+            this.btnAddImage.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnAddImage.Click += new EventHandler(BtnAddImage_Click);
+
+            this.lblSelectedImage.Location = new System.Drawing.Point(200, 285);
+            this.lblSelectedImage.Size = new System.Drawing.Size(250, 23);
+            this.lblSelectedImage.Text = "Seçilen görsel yok";
+            this.lblSelectedImage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
+
             // TextBoxes and NumericUpDown
             this.txtTitle.Location = new System.Drawing.Point(30, 55);
             this.txtTitle.Size = new System.Drawing.Size(420, 25);
@@ -78,7 +101,7 @@ namespace MyProject.Forms
 
             // Buttons
             this.btnCreate.Text = "Create Listing";
-            this.btnCreate.Location = new System.Drawing.Point(30, 300);
+            this.btnCreate.Location = new System.Drawing.Point(30, 340);
             this.btnCreate.Size = new System.Drawing.Size(150, 35);
             this.btnCreate.BackColor = System.Drawing.Color.FromArgb(40, 167, 69);
             this.btnCreate.ForeColor = System.Drawing.Color.White;
@@ -87,7 +110,7 @@ namespace MyProject.Forms
             this.btnCreate.Click += new EventHandler(BtnCreate_Click);
 
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new System.Drawing.Point(200, 300);
+            this.btnCancel.Location = new System.Drawing.Point(200, 340);
             this.btnCancel.Size = new System.Drawing.Size(150, 35);
             this.btnCancel.BackColor = System.Drawing.Color.FromArgb(220, 53, 69);
             this.btnCancel.ForeColor = System.Drawing.Color.White;
@@ -103,6 +126,8 @@ namespace MyProject.Forms
                 this.txtTitle,
                 this.txtDescription,
                 this.numPrice,
+                this.btnAddImage,
+                this.lblSelectedImage,
                 this.btnCreate,
                 this.btnCancel
             });
@@ -110,21 +135,38 @@ namespace MyProject.Forms
 
         private void BtnCreate_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtTitle.Text) || string.IsNullOrWhiteSpace(txtDescription.Text))
+            if (string.IsNullOrWhiteSpace(txtTitle.Text) || string.IsNullOrWhiteSpace(txtDescription.Text) || _selectedImagePaths.Count == 0)
             {
-                MessageBox.Show("Please fill in all required fields.", "Create Listing",
+                MessageBox.Show("Please fill every requiring space and select an Image.", "Create Listing",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
+                // Görselleri kaydet ve yollarını topla
+                List<string> savedImageUrls = new List<string>();
+                string imagesDirectory = Path.Combine(Application.StartupPath, "Images");
+                Directory.CreateDirectory(imagesDirectory); // Klasörü oluştur
+
+                foreach (string selectedPath in _selectedImagePaths)
+                {
+                    string imageName = Guid.NewGuid().ToString() + Path.GetExtension(selectedPath);
+                    string destinationPath = Path.Combine(imagesDirectory, imageName);
+                    File.Copy(selectedPath, destinationPath);
+                    savedImageUrls.Add("Images/" + imageName); // Veritabanına göreceli yolu ekle
+                }
+
+                // Görsel yollarını virgülle birleştir
+                string imageUrlsString = string.Join(",", savedImageUrls);
+
+                // Veritabanına kaydet
                 using (SqlConnection connection = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     connection.Open();
                     string query = @"
-                        INSERT INTO Listings (userID, listingTitle, listingDescription, rentalPrice, listingState)
-                        VALUES (@UserID, @Title, @Description, @Price, 1)";
+                        INSERT INTO Listings (userID, listingTitle, listingDescription, rentalPrice, listingState, ImageUrl)
+                        VALUES (@UserID, @Title, @Description, @Price, 1, @ImageUrl)";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -132,6 +174,7 @@ namespace MyProject.Forms
                         command.Parameters.AddWithValue("@Title", txtTitle.Text);
                         command.Parameters.AddWithValue("@Description", txtDescription.Text);
                         command.Parameters.AddWithValue("@Price", numPrice.Value);
+                        command.Parameters.AddWithValue("@ImageUrl", imageUrlsString); // Virgülle ayrılmış yolları kaydet
 
                         command.ExecuteNonQuery();
                     }
@@ -153,6 +196,22 @@ namespace MyProject.Forms
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void BtnAddImage_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp";
+            openFileDialog.Title = "Select an Image!";
+            openFileDialog.Multiselect = true; // Birden fazla seçime izin ver
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Seçilen dosyaların yollarını listeye ekle
+                _selectedImagePaths.AddRange(openFileDialog.FileNames);
+                // Seçilen dosya sayısını label'da göster
+                lblSelectedImage.Text = $"{_selectedImagePaths.Count} images selected.";
+            }
         }
     }
 } 

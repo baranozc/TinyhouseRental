@@ -6,7 +6,7 @@ namespace MyProject.Config
         { 
             get 
             {
-                return @"Data Source=localhost\SQLEXPRESS;Initial Catalog=TinyHouseManagementDataBase;Integrated Security=True;";
+                return @"Data Source=localhost;Initial Catalog=TinyHouseManagementDataBase;Integrated Security=True;";
             }
         }
     }

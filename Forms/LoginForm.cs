@@ -202,7 +202,7 @@ namespace MyProject.Forms
 
                 if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 {
-                    MessageBox.Show("Lütfen email ve şifre alanlarını doldurun.", "Giriş Hatası", 
+                    MessageBox.Show("Please fill e-mail and password.", "Login Error", 
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
@@ -212,7 +212,7 @@ namespace MyProject.Forms
                     var user = User.FindByEmailAndPassword(email, password);
                     if (user == null)
                     {
-                        MessageBox.Show("Email veya şifre hatalı.", "Giriş Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Email or Password is wrong.", "Login Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -220,15 +220,15 @@ namespace MyProject.Forms
                     {
                         MessageBox.Show(
                             isAdmin
-                                ? "Yalnızca admin hesabı ile giriş yapabilirsiniz. Lütfen bir admin hesabı bilgisi girin."
-                                : "Yalnızca client hesabı ile giriş yapabilirsiniz. Lütfen bir client hesabı bilgisi girin.",
+                                ? "You can only login with an admin account with this option."
+                                : "You can only login with a client account with this option.",
                             "Kullanıcı Tipi Uyuşmazlığı",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Warning);
                         return;
                     }
 
-                    MessageBox.Show($"Hoşgeldiniz {user.Name} {user.Surname}!", "Giriş Başarılı", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Welcome {user.Name} {user.Surname}!", "Login Successfull", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     if (user.UserTypeId == UserTypeId.CLIENT)
                     {
@@ -247,13 +247,13 @@ namespace MyProject.Forms
                 }
                 catch (User.InactiveUserException)
                 {
-                    MessageBox.Show("Bu hesap admin tarafından dondurulmuştur.", "Hesap Donduruldu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("This account is frozen by admin.", "Account frozen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
             }
             catch (System.Data.SqlClient.SqlException sqlEx)
             {
-                MessageBox.Show($"Veritabanı hatası: {sqlEx.Message}\n\nBağlantı dizesi: {DatabaseConfig.ConnectionString}", 
+                MessageBox.Show($"Veritabanı Hatası: {sqlEx.Message}\n\nBağlantı dizesi: {DatabaseConfig.ConnectionString}", 
                     "Veritabanı Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)

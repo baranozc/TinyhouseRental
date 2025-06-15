@@ -5,6 +5,9 @@ using System.Windows.Forms;
 using MyProject.Config;
 using MyProject.Models;
 using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace MyProject.Forms
 {
@@ -84,6 +87,7 @@ namespace MyProject.Forms
             this.pnlProfileCard = new Panel();
             this.picProfileIcon = new PictureBox();
             this.lblProfileTitle = new Label();
+            this.tblProfileLayout = new TableLayoutPanel();
 
             // Form
             this.Text = "Tiny House Rental - Client Dashboard";
@@ -93,7 +97,7 @@ namespace MyProject.Forms
             this.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 
             // Logout Button
-            this.btnLogout.Text = "Çıkış Yap";
+            this.btnLogout.Text = "Exit";
             this.btnLogout.Size = new System.Drawing.Size(100, 35);
             this.btnLogout.Location = new System.Drawing.Point(this.Width - btnLogout.Width - 25, 10);
             this.btnLogout.FlatStyle = FlatStyle.Flat;
@@ -181,6 +185,17 @@ namespace MyProject.Forms
             this.dgvListings.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.dgvListings.ColumnHeadersDefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
 
+            // Add a button column for showing image
+            DataGridViewButtonColumn viewImageButtonColumn = new DataGridViewButtonColumn();
+            viewImageButtonColumn.HeaderText = "Image";
+            viewImageButtonColumn.Text = "Show Image";
+            viewImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewImageButtonColumn.Name = "viewImageColumn";
+            this.dgvListings.Columns.Add(viewImageButtonColumn);
+
+            // Handle button clicks in dgvListings
+            this.dgvListings.CellContentClick += new DataGridViewCellEventHandler(DgvListings_CellContentClick);
+
             // Make Reservation Button
             this.btnMakeReservation.Text = "Make Reservation";
             this.btnMakeReservation.Location = new System.Drawing.Point(10, 420);
@@ -241,6 +256,17 @@ namespace MyProject.Forms
             this.dgvReservations.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvReservations.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
 
+            // Add a button column for showing image in Reservations
+            DataGridViewButtonColumn viewReservationImageButtonColumn = new DataGridViewButtonColumn();
+            viewReservationImageButtonColumn.HeaderText = "Görsel";
+            viewReservationImageButtonColumn.Text = "Göster";
+            viewReservationImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewReservationImageButtonColumn.Name = "viewReservationImageColumn";
+            this.dgvReservations.Columns.Add(viewReservationImageButtonColumn);
+
+            // Handle button clicks in dgvReservations
+            this.dgvReservations.CellContentClick += new DataGridViewCellEventHandler(DgvReservations_CellContentClick);
+
             // Cancel Reservation Button
             this.btnCancelReservation.Text = "Cancel Reservation";
             this.btnCancelReservation.Location = new System.Drawing.Point(10, 420);
@@ -285,6 +311,17 @@ namespace MyProject.Forms
             this.dgvMyListings.ReadOnly = true;
             this.dgvMyListings.AllowUserToResizeColumns = false;
             this.dgvMyListings.AllowUserToResizeRows = false;
+
+            // Add a button column for showing image in My Listings
+            DataGridViewButtonColumn viewMyListingImageButtonColumn = new DataGridViewButtonColumn();
+            viewMyListingImageButtonColumn.HeaderText = "Görsel";
+            viewMyListingImageButtonColumn.Text = "Göster";
+            viewMyListingImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewMyListingImageButtonColumn.Name = "viewMyListingImageColumn";
+            this.dgvMyListings.Columns.Add(viewMyListingImageButtonColumn);
+
+            // Handle button clicks in dgvMyListings
+            this.dgvMyListings.CellContentClick += new DataGridViewCellEventHandler(DgvMyListings_CellContentClick);
 
             // Column Headers Style for My Listings
             this.dgvMyListings.ColumnHeadersHeight = 40;
@@ -486,7 +523,8 @@ namespace MyProject.Forms
                             l.listingTitle,
                             l.rentalPrice,
                             l.listingState,
-                            l.listingDescription
+                            l.listingDescription,
+                            l.ImageUrl
                         FROM Listings l
                         INNER JOIN Users u ON l.userID = u.userID
                         WHERE l.userID != @CurrentUserID 
@@ -513,6 +551,7 @@ namespace MyProject.Forms
                                 dgvListings.Columns["rentalPrice"].HeaderText = "Price (₺)";
                                 dgvListings.Columns["listingState"].Visible = false;
                                 dgvListings.Columns["listingDescription"].HeaderText = "Description";
+                                dgvListings.Columns["ImageUrl"].Visible = false;
                             }
                         }
                     }
@@ -546,9 +585,10 @@ namespace MyProject.Forms
                                 WHEN r.reservationState = 1 THEN 'Active'
                                 ELSE 'Inactive'
                             END as ReservationStatus,
-                            '' as SpecialRequests
+                            '' as SpecialRequests,
+                            l.ImageUrl 
                         FROM Reservations r
-                        INNER JOIN Listings l ON r.listingId = l.listingId
+                        INNER JOIN Listings l ON r.listingId = l.listingId 
                         WHERE r.userId = @UserID
                         ORDER BY r.checkInDate DESC";
 
@@ -598,6 +638,11 @@ namespace MyProject.Forms
                                     row.Cells["PaymentStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
                                 }
                             }
+                            // ImageUrl sütununu gizle
+                            if (dgvReservations.Columns.Contains("ImageUrl"))
+                            {
+                                dgvReservations.Columns["ImageUrl"].Visible = false;
+                            }
                         }
                     }
                 }
@@ -622,7 +667,8 @@ namespace MyProject.Forms
                             l.listingTitle,
                             l.rentalPrice,
                             l.listingState,
-                            l.listingDescription
+                            l.listingDescription,
+                            l.ImageUrl 
                         FROM Listings l
                         INNER JOIN Users u ON l.userID = u.userID
                         WHERE l.userID = @CurrentUserID 
@@ -647,6 +693,11 @@ namespace MyProject.Forms
                                 dgvMyListings.Columns["rentalPrice"].HeaderText = "Price (₺)";
                                 dgvMyListings.Columns["listingState"].Visible = false;
                                 dgvMyListings.Columns["listingDescription"].HeaderText = "Description";
+                            }
+                            // ImageUrl sütununu gizle
+                            if (dgvMyListings.Columns.Contains("ImageUrl"))
+                            {
+                                dgvMyListings.Columns["ImageUrl"].Visible = false;
                             }
                         }
                     }
@@ -770,7 +821,7 @@ namespace MyProject.Forms
 
         private void BtnLogout_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Çıkış yapmak istediğinize emin misiniz?", "Çıkış Yap",
+            if (MessageBox.Show("You sure you want to exit?", "Exit",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Application.Exit();
@@ -788,7 +839,7 @@ namespace MyProject.Forms
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(surname))
             {
-                MessageBox.Show("Ad ve soyad boş olamaz.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Your Name and Surname can't be empty.", "Update Profile", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -798,18 +849,18 @@ namespace MyProject.Forms
             {
                 if (string.IsNullOrEmpty(oldPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(newPasswordRepeat))
                 {
-                    MessageBox.Show("Şifre değiştirmek için tüm şifre alanlarını doldurun.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Please fill the list to change password.", "Update Profile", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
                 if (newPassword != newPasswordRepeat)
                 {
-                    MessageBox.Show("Yeni şifreler eşleşmiyor.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("The new passwords doesn't match.", "Update Profile", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
                 // Eski şifre doğru mu kontrol et
                 if (oldPassword != _client.Password)
                 {
-                    MessageBox.Show("Mevcut şifre yanlış.", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Your old password isn't correct.", "Update Profile", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
             }
@@ -839,11 +890,142 @@ namespace MyProject.Forms
                 _client.Surname = surname;
                 if (changePassword)
                     _client.Password = newPassword;
-                lblProfileInfo.Text = $"Profil güncellendi!\nAd: {name} {surname}";
+                lblProfileInfo.Text = $"Your Profile Updated!\nUser : {name} {surname}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Profil güncellenirken hata oluştu: {ex.Message}", "Profil Güncelle", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"There's an error while updating profile: {ex.Message}", "Update Profile", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DgvListings_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex == dgvListings.Columns["viewImageColumn"].Index && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvListings.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Requiring image can't be find for Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("There is no image for this Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Handle button clicks in dgvMyListings
+        private void DgvMyListings_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex == dgvMyListings.Columns["viewMyListingImageColumn"].Index && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvMyListings.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("We can't find image path for Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("We can't find any image for this Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Handle button clicks in dgvReservations
+        private void DgvReservations_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex == dgvReservations.Columns["viewReservationImageColumn"].Index && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvReservations.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("We can't find an image path for Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("We can't find any image for this Listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
     }

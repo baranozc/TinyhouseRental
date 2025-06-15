@@ -2,6 +2,9 @@ using System;
 using System.Windows.Forms;
 using MyProject.Models;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.IO;
+using System.Data;
 
 namespace MyProject.Forms
 {
@@ -71,8 +74,8 @@ namespace MyProject.Forms
             this.pnlTopBar.BorderStyle = BorderStyle.None;
             this.pnlTopBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
-            // Logout Button
-            this.btnLogout.Text = "Çıkış Yap";
+            // Exit Button: Exits the application directly
+            this.btnLogout.Text = "Close";
             this.btnLogout.Size = new System.Drawing.Size(100, 35);
             this.btnLogout.Location = new System.Drawing.Point(this.pnlTopBar.Width - 125, 10);
             this.btnLogout.FlatStyle = FlatStyle.Flat;
@@ -83,8 +86,8 @@ namespace MyProject.Forms
             this.btnLogout.Click += BtnLogout_Click;
             this.btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // Hesap Değiştir Butonu
-            this.btnSwitchAccount.Text = "Hesap Değiştir";
+            // Switch Account Button
+            this.btnSwitchAccount.Text = "Switch Account";
             this.btnSwitchAccount.Size = new System.Drawing.Size(120, 35);
             this.btnSwitchAccount.Location = new System.Drawing.Point(this.pnlTopBar.Width - 255, 10);
             this.btnSwitchAccount.FlatStyle = FlatStyle.Flat;
@@ -95,11 +98,11 @@ namespace MyProject.Forms
             this.btnSwitchAccount.Click += BtnSwitchAccount_Click;
             this.btnSwitchAccount.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // Panel'e butonları ekle
+            // Panele butonları ekle
             this.pnlTopBar.Controls.Add(this.btnSwitchAccount);
             this.pnlTopBar.Controls.Add(this.btnLogout);
 
-            // Tab Control
+            // Tab kısmı
             this.tabControl.Location = new System.Drawing.Point(0, this.pnlTopBar.Height);
             this.tabControl.Size = new System.Drawing.Size(this.Width, this.Height - this.pnlTopBar.Height);
             this.tabControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -111,7 +114,7 @@ namespace MyProject.Forms
                 this.tabReservations
             });
 
-            // Users Tab
+            // Kullanıcıların yönetildiği kısım
             this.tabUsers.Text = "User Management";
             this.tabUsers.BackColor = System.Drawing.Color.White;
             this.tabUsers.Padding = new Padding(15);
@@ -119,7 +122,7 @@ namespace MyProject.Forms
             this.tabUsers.Controls.Add(this.btnFreezeUser);
             this.tabUsers.Controls.Add(this.btnUnfreezeUser);
 
-            // Users DataGridView
+            // Kullanıcıları görüntülediğimiz yer
             this.dgvUsers.Dock = DockStyle.Top;
             this.dgvUsers.Height = 500;
             this.dgvUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -149,7 +152,7 @@ namespace MyProject.Forms
             this.dgvUsers.CellFormatting += DgvUsers_CellFormatting;
             this.dgvUsers.DataError += (s, e) => { e.ThrowException = false; };
 
-            // Freeze User Button
+            // Bu buton kullanıcıyı donduruyor
             this.btnFreezeUser.Text = "Freeze User";
             this.btnFreezeUser.Location = new System.Drawing.Point(170, 520);
             this.btnFreezeUser.Size = new System.Drawing.Size(150, 35);
@@ -160,8 +163,8 @@ namespace MyProject.Forms
             this.btnFreezeUser.Cursor = Cursors.Hand;
             this.btnFreezeUser.Click += new EventHandler(BtnFreezeUser_Click);
 
-            // Unfreeze User Button
-            this.btnUnfreezeUser.Text = "Unfreeze User";
+            // Bu botun kullanıcının dondurmasını açıyor
+            this.btnUnfreezeUser.Text = "Activate User";
             this.btnUnfreezeUser.Location = new System.Drawing.Point(10, 520);
             this.btnUnfreezeUser.Size = new System.Drawing.Size(150, 35);
             this.btnUnfreezeUser.FlatStyle = FlatStyle.Flat;
@@ -171,7 +174,7 @@ namespace MyProject.Forms
             this.btnUnfreezeUser.Cursor = Cursors.Hand;
             this.btnUnfreezeUser.Click += new EventHandler(BtnUnfreezeUser_Click);
 
-            // Listings Tab
+            // Listelemelerin yönetildiği kısım, buraya tıklandığında direkt listelemeler açılıyor
             this.tabListings.Text = "Listing Management";
             this.tabListings.BackColor = System.Drawing.Color.White;
             this.tabListings.Padding = new Padding(15);
@@ -179,7 +182,7 @@ namespace MyProject.Forms
             this.tabListings.Controls.Add(this.btnActivateListing);
             this.tabListings.Controls.Add(this.btnDeactivateListing);
 
-            // Listings DataGridView
+            // Listelemelerin görüntülendiği kısım, tıklandığında açılıyor
             this.dgvListings.Dock = DockStyle.Top;
             this.dgvListings.Height = 500;
             this.dgvListings.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -207,8 +210,20 @@ namespace MyProject.Forms
             this.dgvListings.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvListings.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
             this.dgvListings.CellFormatting += DgvListings_CellFormatting;
+            this.dgvListings.DataError += (s, e) => { e.ThrowException = false; };
 
-            // Activate Listing Button
+            // Burada listelemede görsel göüzkmesi ayarlanıyor
+            DataGridViewButtonColumn viewListingImageButtonColumn = new DataGridViewButtonColumn();
+            viewListingImageButtonColumn.HeaderText = "Image";
+            viewListingImageButtonColumn.Text = "Show";
+            viewListingImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewListingImageButtonColumn.Name = "viewListingImageColumn";
+            this.dgvListings.Columns.Add(viewListingImageButtonColumn);
+
+            
+            this.dgvListings.CellContentClick += new DataGridViewCellEventHandler(DgvListings_CellContentClick);
+
+            // İlgili listelemeyi aktifleştiren buton
             this.btnActivateListing.Text = "Activate Listing";
             this.btnActivateListing.Location = new System.Drawing.Point(10, 520);
             this.btnActivateListing.Size = new System.Drawing.Size(150, 35);
@@ -219,7 +234,7 @@ namespace MyProject.Forms
             this.btnActivateListing.Cursor = Cursors.Hand;
             this.btnActivateListing.Click += new EventHandler(BtnActivateListing_Click);
 
-            // Deactivate Listing Button
+            // Listelemeyi donduran, deaktive eden buton
             this.btnDeactivateListing.Text = "Deactivate Listing";
             this.btnDeactivateListing.Location = new System.Drawing.Point(170, 520);
             this.btnDeactivateListing.Size = new System.Drawing.Size(150, 35);
@@ -230,7 +245,7 @@ namespace MyProject.Forms
             this.btnDeactivateListing.Cursor = Cursors.Hand;
             this.btnDeactivateListing.Click += new EventHandler(BtnDeactivateListing_Click);
 
-            // Reservations Tab
+            // Rezervasyonların yönetildiği kısım, buraya tıklandığında rezervasyonlar görüntüleniyor
             this.tabReservations.Text = "Reservation Management";
             this.tabReservations.BackColor = System.Drawing.Color.White;
             this.tabReservations.Padding = new Padding(15);
@@ -240,7 +255,7 @@ namespace MyProject.Forms
             this.tabReservations.Controls.Add(this.btnMarkAsPaid);
             this.tabReservations.Controls.Add(this.btnMarkAsUnpaid);
 
-            // Reservations DataGridView
+            // Rezervasyonların görüntülendiği yer
             this.dgvReservations.Dock = DockStyle.Top;
             this.dgvReservations.Height = 500;
             this.dgvReservations.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -267,7 +282,7 @@ namespace MyProject.Forms
             this.dgvReservations.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(230, 240, 255);
             this.dgvReservations.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
             this.dgvReservations.DefaultCellStyle.Padding = new Padding(10, 0, 0, 0);
-            this.dgvReservations.CellFormatting -= DgvReservations_CellFormatting;
+            this.dgvReservations.CellFormatting += DgvReservations_CellFormatting;
             this.dgvReservations.DataError += (s, e) => { e.ThrowException = false; };
             this.dgvReservations.CellValueChanged += DgvReservations_CellValueChanged;
             this.dgvReservations.CurrentCellDirtyStateChanged += (s, e) =>
@@ -276,7 +291,18 @@ namespace MyProject.Forms
                     dgvReservations.CommitEdit(DataGridViewDataErrorContexts.Commit);
             };
 
-            // Approve Reservation Button
+            // Rezervasyon kısmında buradaki buton görselleri görmemize yarıyor
+            DataGridViewButtonColumn viewReservationImageButtonColumn = new DataGridViewButtonColumn();
+            viewReservationImageButtonColumn.HeaderText = "Image";
+            viewReservationImageButtonColumn.Text = "Show";
+            viewReservationImageButtonColumn.UseColumnTextForButtonValue = true;
+            viewReservationImageButtonColumn.Name = "viewReservationImageColumn";
+            this.dgvReservations.Columns.Add(viewReservationImageButtonColumn);
+
+            // 
+            this.dgvReservations.CellContentClick += new DataGridViewCellEventHandler(DgvReservations_CellContentClick);
+
+            // Rezervasyonlar bu butondan onaylanıyor
             this.btnApproveReservation.Text = "Approve Reservation";
             this.btnApproveReservation.Location = new System.Drawing.Point(10, 520);
             this.btnApproveReservation.Size = new System.Drawing.Size(180, 35);
@@ -287,7 +313,7 @@ namespace MyProject.Forms
             this.btnApproveReservation.Cursor = Cursors.Hand;
             this.btnApproveReservation.Click += new EventHandler(BtnApproveReservation_Click);
 
-            // Cancel Reservation Button
+            // Bu butondan rezervasyonlar iptal ediliyor
             this.btnCancelReservation.Text = "Cancel Reservation";
             this.btnCancelReservation.Location = new System.Drawing.Point(200, 520);
             this.btnCancelReservation.Size = new System.Drawing.Size(180, 35);
@@ -298,7 +324,7 @@ namespace MyProject.Forms
             this.btnCancelReservation.Cursor = Cursors.Hand;
             this.btnCancelReservation.Click += new EventHandler(BtnCancelReservation_Click);
 
-            // Mark as Paid Button
+            // Ödeme yapıldı butonu
             this.btnMarkAsPaid.Text = "Mark as Paid";
             this.btnMarkAsPaid.Location = new System.Drawing.Point(400, 520);
             this.btnMarkAsPaid.Size = new System.Drawing.Size(150, 35);
@@ -309,7 +335,7 @@ namespace MyProject.Forms
             this.btnMarkAsPaid.Cursor = Cursors.Hand;
             this.btnMarkAsPaid.Click += new EventHandler(BtnMarkAsPaid_Click);
 
-            // Mark as Unpaid Button
+            // Ödeme yapılmadı butonu
             this.btnMarkAsUnpaid.Text = "Mark as Unpaid";
             this.btnMarkAsUnpaid.Location = new System.Drawing.Point(560, 520);
             this.btnMarkAsUnpaid.Size = new System.Drawing.Size(150, 35);
@@ -320,7 +346,7 @@ namespace MyProject.Forms
             this.btnMarkAsUnpaid.Cursor = Cursors.Hand;
             this.btnMarkAsUnpaid.Click += new EventHandler(BtnMarkAsUnpaid_Click);
 
-            // Add controls to form
+            // panele top bar ve tab control ekliyor
             this.Controls.Add(this.pnlTopBar);
             this.Controls.Add(this.tabControl);
         }
@@ -331,8 +357,8 @@ namespace MyProject.Forms
             {
                 using (var connection = new System.Data.SqlClient.SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
-                    connection.Open();
-                    string query = @"
+                    connection.Open(); // Veritabanına bağlanıyor
+                    string query = @" 
                         SELECT 
                             userID AS [UserID],
                             email AS [Email],
@@ -342,15 +368,15 @@ namespace MyProject.Forms
                             'Client' AS [Type],
                             userState AS [State]
                         FROM Users
-                        WHERE userTypeId = 1";
+                        WHERE userTypeId = 1"; // Kullanıcı yönetim kısmındaki kullanıcıların listesini veritabanından çağırıyor
 
-                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection))
-                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command))
+                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection)) // Veritabanından sorgu çekiyor
+                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command)) 
                     {
                         var dt = new System.Data.DataTable();
                         adapter.Fill(dt);
                         dgvUsers.DataSource = dt;
-                        // State sütununu kaldırıp yerine string tipinde bir sütun ekle
+                        
                         if (dgvUsers.Columns["State"] != null)
                         {
                             int stateIndex = dgvUsers.Columns["State"].Index;
@@ -382,52 +408,61 @@ namespace MyProject.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Kullanicilar yuklenirken bir hata olustu: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void LoadListings()
+        private void LoadListings() // Listelemeleri listelediğimiz metod
         {
             try
             {
-                using (var connection = new System.Data.SqlClient.SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
+                using (SqlConnection connection = new SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
-                    connection.Open();
+                    connection.Open(); 
                     string query = @"
                         SELECT 
-                            listingID,
-                            userId,
-                            listingTitle,
-                            rentalPrice,
-                            listingState,
-                            listingDescription
-                        FROM Listings";
+                            l.listingID,
+                            CONCAT(u.name, ' ', u.surname) as ownerName,
+                            l.listingTitle,
+                            l.rentalPrice,
+                            l.listingState,
+                            l.ImageUrl 
+                        FROM Listings l
+                        INNER JOIN Users u ON l.userID = u.userID
+                        ORDER BY l.listingID DESC"; // Listeleri veritabanından çağıran kısım burası
 
-                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection))
-                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command))
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        var dt = new System.Data.DataTable();
-                        adapter.Fill(dt);
-                        dgvListings.DataSource = dt;
-                        // ListingState sütununu görsel olarak düzenle
-                        if (dgvListings.Columns["listingState"] != null)
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            int stateIndex = dgvListings.Columns["listingstate"].Index;
-                            dgvListings.Columns.Remove("listingstate");
-                            var col = new DataGridViewTextBoxColumn();
-                            col.Name = "listingstate";
-                            col.HeaderText = "State";
-                            col.DataPropertyName = "listingstate";
-                            col.ReadOnly = true;
-                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-                            dgvListings.Columns.Insert(stateIndex, col);
+                            DataTable dt = new DataTable();
+                            dt.Load(reader);
+                            dgvListings.DataSource = dt;
+
+                            // 
+                            if (dgvListings.Columns.Contains("listingID")) dgvListings.Columns["listingID"].Visible = false;
+                            if (dgvListings.Columns.Contains("ownerName")) dgvListings.Columns["ownerName"].HeaderText = "Owner";
+                            if (dgvListings.Columns.Contains("listingTitle")) dgvListings.Columns["listingTitle"].HeaderText = "Title";
+                            if (dgvListings.Columns.Contains("rentalPrice")) dgvListings.Columns["rentalPrice"].HeaderText = "Price (₺)";
+                            if (dgvListings.Columns.Contains("listingState")) dgvListings.Columns["listingState"].HeaderText = "State";
+
+                            // ImageUrl sütununu gizlediğimiz yer
+                            if (dgvListings.Columns.Contains("ImageUrl"))
+                            {
+                                dgvListings.Columns["ImageUrl"].Visible = false;
+                            }
+                             // Görsel butonu sütununu en sağa taşıyoruz burada
+                            if (dgvListings.Columns.Contains("viewListingImageColumn"))
+                            {
+                                dgvListings.Columns["viewListingImageColumn"].DisplayIndex = dgvListings.Columns.Count - 1;
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading listings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Listelemeler yüklenirken bir hata oluştu : {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -435,52 +470,86 @@ namespace MyProject.Forms
         {
             try
             {
-                using (var connection = new System.Data.SqlClient.SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
+                using (SqlConnection connection = new SqlConnection(MyProject.Config.DatabaseConfig.ConnectionString))
                 {
                     connection.Open();
                     string query = @"
                         SELECT 
-                            reservationID,
-                            userID,
-                            listingId,
-                            checkInDate,
-                            checkOutDate,
-                            reservationState,
-                            IsPaid,
-                            CancellationReason
-                        FROM Reservations";
+                            r.reservationID,
+                            CONCAT(u.name, ' ', u.surname) as userName,
+                            l.listingTitle,
+                            r.checkInDate,
+                            r.checkOutDate,
+                            CASE 
+                                WHEN r.IsPaid = 1 THEN 'Paid'
+                                ELSE 'Unpaid'
+                            END as PaymentStatus,
+                            CASE 
+                                WHEN r.reservationState = 1 THEN 'Active'
+                                ELSE 'Inactive'
+                            END as ReservationStatus,
+                            l.ImageUrl 
+                        FROM Reservations r
+                        INNER JOIN Users u ON r.userId = u.userID
+                        INNER JOIN Listings l ON r.listingId = l.listingId 
+                        ORDER BY r.checkInDate DESC";
 
-                    using (var command = new System.Data.SqlClient.SqlCommand(query, connection))
-                    using (var adapter = new System.Data.SqlClient.SqlDataAdapter(command))
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        var dt = new System.Data.DataTable();
-                        adapter.Fill(dt);
-                        dgvReservations.DataSource = dt;
-                        // Sütunları checkbox olarak ayarla
-                        var checkColumns = new List<string> { "reservationState", "IsPaid" };
-                        var toChange = new List<int>();
-                        for (int i = 0; i < dgvReservations.Columns.Count; i++)
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+                        dgvReservations.DataSource = dataTable;
+
+                        // Format the columns
+                        if (dgvReservations.Columns.Contains("reservationID")) dgvReservations.Columns["reservationID"].Visible = false;
+                        if (dgvReservations.Columns.Contains("userName")) dgvReservations.Columns["userName"].HeaderText = "User";
+                        if (dgvReservations.Columns.Contains("listingTitle")) dgvReservations.Columns["listingTitle"].HeaderText = "Listing";
+                        if (dgvReservations.Columns.Contains("checkInDate")) dgvReservations.Columns["checkInDate"].HeaderText = "Check-in Date";
+                        if (dgvReservations.Columns.Contains("checkOutDate")) dgvReservations.Columns["checkOutDate"].HeaderText = "Check-out Date";
+                        if (dgvReservations.Columns.Contains("PaymentStatus")) dgvReservations.Columns["PaymentStatus"].HeaderText = "Payment Status";
+                        if (dgvReservations.Columns.Contains("ReservationStatus")) dgvReservations.Columns["ReservationStatus"].HeaderText = "Status";
+
+                        // Status sütununun görünümünü özelleştir
+                        foreach (DataGridViewRow row in dgvReservations.Rows)
                         {
-                            if (checkColumns.Contains(dgvReservations.Columns[i].Name))
-                                toChange.Add(i);
+                            if (row.Cells["ReservationStatus"].Value != null)
+                            {
+                                if (row.Cells["ReservationStatus"].Value.ToString() == "Active")
+                                {
+                                    row.Cells["ReservationStatus"].Style.ForeColor = System.Drawing.Color.Green;
+                                    row.Cells["ReservationStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                                }
+                                else
+                                {
+                                    row.Cells["ReservationStatus"].Style.ForeColor = System.Drawing.Color.Red;
+                                    row.Cells["ReservationStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                                }
+                            }
+                            // Ödeme durumunu özelleştir
+                            if (row.Cells["PaymentStatus"].Value != null)
+                            {
+                                string paymentStatus = row.Cells["PaymentStatus"].Value.ToString();
+                                row.Cells["PaymentStatus"].Style.ForeColor = paymentStatus == "Paid" ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+                                row.Cells["PaymentStatus"].Style.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+                            }
                         }
-                        foreach (var idx in toChange)
+                         // ImageUrl sütununu gizle
+                        if (dgvReservations.Columns.Contains("ImageUrl"))
                         {
-                            var col = dgvReservations.Columns[idx];
-                            var checkCol = new DataGridViewCheckBoxColumn();
-                            checkCol.Name = col.Name;
-                            checkCol.HeaderText = col.HeaderText;
-                            checkCol.DataPropertyName = col.DataPropertyName;
-                            checkCol.ReadOnly = false;
-                            dgvReservations.Columns.RemoveAt(idx);
-                            dgvReservations.Columns.Insert(idx, checkCol);
+                            dgvReservations.Columns["ImageUrl"].Visible = false;
                         }
+                         // Görsel butonu sütununu en sağa taşı (varsa)
+                            if (dgvReservations.Columns.Contains("viewReservationImageColumn"))
+                            {
+                                dgvReservations.Columns["viewReservationImageColumn"].DisplayIndex = dgvReservations.Columns.Count - 1;
+                            }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading reservations: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading reservations: {ex.Message}\n\nStack Trace: {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -647,7 +716,7 @@ namespace MyProject.Forms
 
         private void BtnSwitchAccount_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Hesap değiştirmek istediğinize emin misiniz?", "Hesap Değiştir",
+            if (MessageBox.Show("Are you sure you want to switch accounts?", "Switch Account",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 this.Hide();
@@ -734,7 +803,7 @@ namespace MyProject.Forms
                 }
                 e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-            else if (dgvReservations.Columns[e.ColumnIndex].HeaderText == "IsPaid" && e.Value != null)
+            if (dgvReservations.Columns[e.ColumnIndex].HeaderText == "IsPaid" && e.Value != null)
             {
                 bool isPaid = false;
                 if (e.Value is bool)
@@ -852,10 +921,98 @@ namespace MyProject.Forms
 
         private void BtnLogout_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Çıkmak istediğinize emin misiniz?", "Çıkış Yap",
+            if (MessageBox.Show("Are you sure you want to exit?", "Exit",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Application.Exit();
+            }
+        }
+
+        // Handle button clicks in dgvListings (Admin)
+        private void DgvListings_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+             // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex >= 0 && dgvListings.Columns[e.ColumnIndex].Name == "viewListingImageColumn" && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvListings.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No valid image path found for the listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No image found for this listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // Handle button clicks in dgvReservations (Admin)
+        private void DgvReservations_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+             // Check if the clicked cell is in the button column and it's not the header row
+            if (e.ColumnIndex >= 0 && dgvReservations.Columns[e.ColumnIndex].Name == "viewReservationImageColumn" && e.RowIndex >= 0)
+            {
+                // Get the ImageUrl from the selected row
+                DataGridViewRow selectedRow = dgvReservations.Rows[e.RowIndex];
+                string imageUrlsString = selectedRow.Cells["ImageUrl"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(imageUrlsString))
+                {
+                    // Split the comma-separated string into individual image URLs
+                    List<string> imageUrls = imageUrlsString.Split(',').ToList();
+
+                    // Construct the absolute paths to the image files
+                    List<string> absoluteImagePaths = new List<string>();
+                    foreach (string imageUrl in imageUrls)
+                    {
+                        string trimmedImageUrl = imageUrl.Trim();
+                        if (!string.IsNullOrEmpty(trimmedImageUrl))
+                        {
+                            absoluteImagePaths.Add(Path.Combine(Application.StartupPath, trimmedImageUrl));
+                        }
+                    }
+
+                    if (absoluteImagePaths.Count > 0)
+                    {
+                        // Show the images in the image viewer form
+                        ImageViewerForm imageViewer = new ImageViewerForm(absoluteImagePaths);
+                        imageViewer.ShowDialog();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No valid image path found for the listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No image found for this listing.", "No Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
     }

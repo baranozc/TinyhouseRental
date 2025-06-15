@@ -44,7 +44,7 @@ namespace MyProject.Models
                         return new UserResponse 
                         { 
                             Success = false,
-                            Message = "Email veya şifre hatalı",
+                            Message = "Email or Passsword is wrong.",
                             User = null
                         };
                     }

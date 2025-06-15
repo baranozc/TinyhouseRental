@@ -373,6 +373,8 @@ namespace MyProject
 
     static class Program
     {
+        public static User CurrentUser { get; set; }
+
         [STAThread]
         static void Main()
         {
